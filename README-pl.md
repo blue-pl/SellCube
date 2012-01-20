@@ -1,5 +1,5 @@
-SellCube
-========
+SellCube 1.10.1
+===============
 Plugin pozwalający na sprzedawanie regionów za pomocą odpowiednich tabliczek.
 
 Opis użycia
@@ -8,7 +8,7 @@ Należy postawić tabliczkę i wpisać ogłoszenie.
 Potem wpisujemy w czacie komendę: `/sellcube [lp] cena region_name` i klikamy LPM na wcześniej przygotowaną tabliczkę (alias komendy - sc)
 Przykład: `/sc 10.5 moj_region`
 
-LPM na tak przygotowaną tabliczkę powoduje wyświetlenie skróconej informacji (sprzedający i cena)
+LPM na tak przygotowaną tabliczkę powoduje wyświetlenie skróconej informacji (sprzedający i cena oraz ID jeśli aktywny perm: _sellcube.sell_)
 PPM powoduje zmianę właściciela regionu na klikającego, przelanie odpowiedniej kwoty i przedstawienie na tabliczce informacji o kupującym.
 Informacje po kupnie pokazują kto kupił region (kolory według sekcji colors w konfigu) i kiedy gracz był na serwerze (zielony - online, czarny - offline, czerwony - nieaktywny, fioletowy - na wakacjach)
 Informacje aktualizowane co 12 godzin jeśli opcja _sign_updater: true_.
@@ -37,6 +37,8 @@ Komendy użytkownika
 * `/sc cena nazwa` - podstawowa wersja polecenia
 * `/sc lp cena nazwa` - polecenie z parametrem lp powoduje, że kupujący nie stanie się właścicielem tabliczki
 * `/sc cancel` - anuluje tworzenie ogłoszenia
+* `/sc status` - tworzy jedynie informację o statusie gracza
+* `/sc copy db_id` - tworzy kopię ogłoszenia na podstawie id wpisu z bazy(LWC na właściciela ogłoszenia)
 
 Komendy serwera
 ---------------
