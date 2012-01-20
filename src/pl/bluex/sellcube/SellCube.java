@@ -208,12 +208,17 @@ public class SellCube extends JavaPlugin {
     protected void severe(String msg) {
         log.severe(logPrefix + msg);
     }
-	
-	protected void addAd(String player, String reg, float price, Block block, boolean lwc_pass) {
+
+    protected void addAd(String player, String reg, float price, Block block, boolean lwc_pass) {
+        addAd(player, reg, price, block, lwc_pass, true);
+    }
+
+	protected void addAd(String player, String reg, float price, Block block, boolean lwc_pass, boolean active) {
 		db.query(String.format("INSERT INTO %s " +
 				"(owner, region, price, active, lwc_pass, sign_world, sign_x, sign_y, sign_z) " +
-				"VALUES ('%s', '%s', %.2f, %d, %d, '%s', %d, %d, %d)",
-			pluginName, player, reg, price, 1, lwc_pass?1:0, block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
+				"VALUES ('%s', %s, %.2f, %d, %d, '%s', %d, %d, %d)",
+			pluginName, player, (reg!=null)?"'"+reg+"'":"NULL", price, active?1:0, lwc_pass?1:0,
+            block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
         SellCube.lwc.getPhysicalDatabase().registerProtection(
             block.getTypeId(), Protection.Type.PRIVATE,
             block.getWorld().getName(), player, "",
@@ -312,7 +317,7 @@ public class SellCube extends JavaPlugin {
             String s;
             String world_name = player.getWorld().getName();
             for (String g : SellCube.pex.getUser(player).getGroupsNames(world_name)) {
-                s = groupsColors.getString(g);
+                s = groupsColors.get(g).toString();
                 if(s != null && s.matches("[0-9A-Fa-f]")) {
                     color = "§" + s.charAt(0);
                     break;

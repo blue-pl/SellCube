@@ -1,6 +1,6 @@
 name: SellCube
 main: pl.bluex.sellcube.SellCube
-version: 0.10
+version: 0.10.1
 description: Plugin pozwalajacy sprzedawać regiony za pomoca znakow
 author: BlueX
 depend: [PermissionsEx]
@@ -34,3 +34,4 @@ commands:
     usage: |
       /<command> [lp] cena nazwa_regionu - tworzy ogłoszenie
       /<command> cancel - anuluje tworzenie ogłoszenia
+      /<command> status - tworzy tabliczkę z informacjami o graczu

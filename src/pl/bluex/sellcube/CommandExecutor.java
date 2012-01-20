@@ -43,8 +43,12 @@ class SellCubeCommand implements CommandExecutor {
                     cancelCommand(player);
                     return true;
                 }
+                else if("status".equalsIgnoreCase(args_l.get(0))) {
+                    statusCommand(player);
+                    return true;
+                }
                 else if(args_l.size() >= 2) {
-                    if("load".equalsIgnoreCase(args_l.get(0))) {
+                    if("copy".equalsIgnoreCase(args_l.get(0))) {
                         copyCommand(player, args_l.get(1));
                         return true;
                     }
@@ -128,5 +132,10 @@ class SellCubeCommand implements CommandExecutor {
 			plugin.severe("SQL exception: " + e.getMessage());
             return;
 		}
+    }
+
+    protected void statusCommand(Player player) {
+        plugin.newAdsRN.put(player, null);
+        player.sendMessage(ChatColor.BLUE + "Kliknij znak");
     }
 }
