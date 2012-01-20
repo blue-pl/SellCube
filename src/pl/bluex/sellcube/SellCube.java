@@ -74,7 +74,18 @@ public class SellCube extends JavaPlugin {
         offlineDays = config.getInt("misc.offline_days", 21);
         updater = config.getBoolean("misc.sign_updater", false);
         groupsColors = config.getConfigurationSection("colors");
-
+        if(config.getConfigurationSection("database") == null) {
+            config.set("database.hostname", dbHost);
+            config.set("database.port", dbPort);
+            config.set("database.user", dbUser);
+            config.set("database.password", dbPass);
+            config.set("database.dbname", dbName);
+            config.set("misc.offline_days", offlineDays);
+            config.set("misc.sign_updater", updater);
+            saveConfig();
+            info("Config saved");
+            return;
+        }
 		if (setupWorldGuard() && setupPermissions() && setupLWC() && setupDB()) {
 			pm.registerEvent(Event.Type.PLAYER_INTERACT, 
 					new PlayerInteract(this), Event.Priority.Highest, this);
@@ -96,14 +107,6 @@ public class SellCube extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		/*config.set("database.hostname", dbHost);
-		config.set("database.port", dbPort);
-		config.set("database.user", dbUser);
-		config.set("database.password", dbPass);
-		config.set("database.dbname", dbName);
-        config.set("misc.offline_days", offlineDays);
-        config.set("misc.sign_updater", updater);
-		saveConfig();*/
 		PluginDescriptionFile pdfFile = getDescription();
 		info(pluginName + " v" + pdfFile.getVersion() + " is disabled.");
 	}
@@ -310,7 +313,6 @@ public class SellCube extends JavaPlugin {
             String world_name = player.getWorld().getName();
             for (String g : SellCube.pex.getUser(player).getGroupsNames(world_name)) {
                 s = groupsColors.getString(g);
-                info("color "+s);
                 if(s != null && s.matches("[0-9A-Fa-f]")) {
                     color = "§" + s.charAt(0);
                     break;

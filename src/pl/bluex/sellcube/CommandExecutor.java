@@ -55,6 +55,7 @@ class SellCubeCommand implements CommandExecutor {
                         args_l.remove(0);
                     }
                     addCommand(player, args_l.get(0), args_l.get(1), lwc_pass);
+                    return true;
                 }
             }
             return false;
