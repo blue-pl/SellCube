@@ -37,6 +37,7 @@ public class SellCube extends JavaPlugin {
 	protected final HashMap<Player, String> newAdsRN = new HashMap<Player, String>();
     protected final HashMap<Player, Float> newAdsP = new HashMap<Player, Float>();
     protected final HashMap<Player, Boolean> newAdsLWC = new HashMap<Player, Boolean>();
+    protected final HashMap<Player, Integer> newAdsID = new HashMap<Player, Integer>();
 	protected PluginManager pm;
 	protected static WorldGuardPlugin wg;
 	protected static PermissionManager pex;
@@ -95,14 +96,14 @@ public class SellCube extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		config.set("database.hostname", dbHost);
+		/*config.set("database.hostname", dbHost);
 		config.set("database.port", dbPort);
 		config.set("database.user", dbUser);
 		config.set("database.password", dbPass);
 		config.set("database.dbname", dbName);
         config.set("misc.offline_days", offlineDays);
         config.set("misc.sign_updater", updater);
-		saveConfig();
+		saveConfig();*/
 		PluginDescriptionFile pdfFile = getDescription();
 		info(pluginName + " v" + pdfFile.getVersion() + " is disabled.");
 	}
@@ -227,6 +228,11 @@ public class SellCube extends JavaPlugin {
             pluginName, block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
 	}
 
+    protected ResultSet getAd(int id) {
+		return db.query(String.format("SELECT * FROM %s "
+                + "WHERE id=%d", pluginName, id));
+	}
+
     protected void deactivateAd(Block block, String player) {
         db.query(String.format("UPDATE %s SET active=%d, owner='%s'"
                 + "WHERE sign_world='%s' AND sign_x=%d AND sign_y=%d AND sign_z=%d",
@@ -298,11 +304,13 @@ public class SellCube extends JavaPlugin {
     }
 
     protected String getPlayerGroupColor(Player player) {
-        String color = "§0";
+        String color = "§f";
         if(groupsColors != null) {
             String s;
-            for (String g : SellCube.pex.getUser(player).getGroupsNames(player.getWorld().getName())) {
+            String world_name = player.getWorld().getName();
+            for (String g : SellCube.pex.getUser(player).getGroupsNames(world_name)) {
                 s = groupsColors.getString(g);
+                info("color "+s);
                 if(s != null && s.matches("[0-9A-Fa-f]")) {
                     color = "§" + s.charAt(0);
                     break;

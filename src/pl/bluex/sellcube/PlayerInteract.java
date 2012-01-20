@@ -50,26 +50,14 @@ public class PlayerInteract extends PlayerListener {
 			rs = (rs.next()) ? rs : null;
 	        
 	        if (action == Action.LEFT_CLICK_BLOCK) {
-	    		if(plugin.newAdsRN.containsKey(player)) { // if(tworzymy_ogloszenie)
-                    String regionName = plugin.newAdsRN.get(player);
-                    float price = plugin.newAdsP.get(player);
-                    boolean lwc_pass = plugin.newAdsLWC.get(player);
-	    			if(rs != null) { // if(znak_w_bazie) 
-	    				player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
-                        return;
-	    			} else {
-		    			plugin.addAd(player.getName(), regionName, price, block, lwc_pass);
-		    			plugin.newAdsRN.remove(player);
-                        plugin.newAdsP.remove(player);
-                        plugin.newAdsLWC.remove(player);
-		    			player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
-	    			}
-	    		} else if(rs != null) { // if(znak_w_bazie)
-					if(rs.getBoolean("active") == true) {
-                        String owner = rs.getString("owner");
-                        player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + plugin.getPlayerGroupColor(plugin.getServer().getPlayer(owner)) + owner);
-                        player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + rs.getString("price"));
-                    }
+	    		if(plugin.newAdsRN.containsKey(player)) {
+                    addAction(player, block);
+	    		}
+                else if(plugin.newAdsID.containsKey(player)) {
+                    copyAction(player, block);
+                }
+                else if(rs != null) { // if(znak_w_bazie)
+					infoAction(player, block);
 	        	}
 	        }
 	        else if (action == Action.RIGHT_CLICK_BLOCK) {
@@ -179,5 +167,41 @@ public class PlayerInteract extends PlayerListener {
         } catch (SQLException e) {
 			plugin.severe("SQL exception: " + e.getMessage());
 		}
+    }
+
+    protected void addAction(Player player, Block block) throws SQLException {
+        ResultSet rs = plugin.getAd(block);
+        String regionName = plugin.newAdsRN.get(player);
+        float price = plugin.newAdsP.get(player);
+        boolean lwc_pass = plugin.newAdsLWC.get(player);
+        if(rs.next()) {
+            player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
+        } else {
+            plugin.addAd(player.getName(), regionName, price, block, lwc_pass);
+            plugin.newAdsRN.remove(player);
+            plugin.newAdsP.remove(player);
+            plugin.newAdsLWC.remove(player);
+            player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
+        }
+    }
+
+    protected void infoAction(Player player, Block block) throws SQLException {
+        ResultSet rs = plugin.getAd(block);
+        if(rs.next() && rs.getBoolean("active")) {
+            String owner = rs.getString("owner");
+            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + plugin.getPlayerGroupColor(plugin.getServer().getPlayer(owner)) + owner);
+            player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + rs.getString("price"));
+        }
+    }
+
+    private void copyAction(Player player, Block block) throws SQLException {
+        ResultSet rs = plugin.getAd(plugin.newAdsID.get(player));
+        if(rs.next()) {
+            player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
+        }
+        else {
+            plugin.addAd(player.getName(), rs.getString("region"), rs.getFloat("price"), block, rs.getBoolean("lwc_pass"));
+            player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
+        }
     }
 }

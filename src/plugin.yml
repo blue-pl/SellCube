@@ -31,4 +31,6 @@ commands:
     description: Creates an ad
     aliases: [sc]
     permission: sellcube.sell
-    usage: /<command> cena nazwa_regionu
+    usage: |
+      /<command> [lp] cena nazwa_regionu - tworzy ogłoszenie
+      /<command> cancel - anuluje tworzenie ogłoszenia
