@@ -65,7 +65,7 @@ public class PlayerInteract extends PlayerListener {
 	        }
 	        else if (action == Action.RIGHT_CLICK_BLOCK) {
 	        	buyAction(player, block);
-                event.setCancelled(true);
+                //event.setCancelled(true);
 	        }
         } catch (SQLException e) {
 			plugin.severe("SQL exception: " + e.getMessage());
@@ -94,7 +94,7 @@ public class PlayerInteract extends PlayerListener {
             if(SellCube.checkPermission(player, "sellcube.sell", false))
                 player.sendMessage(ChatColor.BLUE + "ID: " + ChatColor.DARK_AQUA + rs.getString("id"));
             String owner = rs.getString("owner");
-            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + plugin.getPlayerGroupColor(plugin.getServer().getPlayer(owner)) + owner);
+            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + plugin.getPlayerGroupColor(owner, block.getWorld().getName()) + owner);
             player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + rs.getString("price"));
         }
     }
@@ -120,12 +120,7 @@ public class PlayerInteract extends PlayerListener {
         }
         String playerName = player.getName();
         plugin.addAd(player.getName(), null, 0, block, true, false);
-        Sign sign = (Sign) block.getState();
-        sign.setLine(0, "Gracz:");
-        sign.setLine(1, plugin.getPlayerGroupColor(player) + playerName);
-        sign.setLine(2, "Ostatnio byl:");
-        sign.update(true);
-        plugin.updateSign(sign, playerName);
+        plugin.updateSign((Sign) block.getState(), playerName);
         plugin.newAdsRN.remove(player);
         player.sendMessage(ChatColor.BLUE + "Informacja utworzona");
     }
@@ -145,7 +140,7 @@ public class PlayerInteract extends PlayerListener {
             ProtectedRegion region = manager.getRegion(regionName);
             if(active) {
                 if(region == null || !(region.getOwners().getPlayers().contains(sellerName) ||
-                        SellCube.checkPermission(plugin.getServer().getPlayer(sellerName), "sellcube.sell_all", false))) {
+                        SellCube.checkPermission(sellerName, "sellcube.sell_all", block.getWorld().getName()))) {
                     Protection protection = SellCube.lwc.findProtection(block);
                     if(protection != null) {
                         protection.remove();
@@ -204,14 +199,9 @@ public class PlayerInteract extends PlayerListener {
             }
 
             // Update sign
-            Sign sign = (Sign) block.getState();
-            sign.setLine(0, "Wlasciciel:");
-            sign.setLine(1, plugin.getPlayerGroupColor(player) + buyerName);
-            sign.setLine(2, "Ostatnio byl:");
             /*int n = regionName.length();
             sign.setLine(2, regionName.substring(0, (n > 15) ? 15 : n));*/
-            sign.update(true);
-            plugin.updateSign(sign, buyerName);
+            plugin.updateSign((Sign) block.getState(), buyerName);
             plugin.deactivateAd(block, buyerName);
 
             // Change sign owner

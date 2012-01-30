@@ -23,7 +23,7 @@ class SellCubeCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		if(!cmd.getName().equalsIgnoreCase("sellcube")) return true;
+		if(!cmd.getName().equalsIgnoreCase("sellcube") || !cmd.getName().equalsIgnoreCase("sc")) return true;
         List<String> args_l = new LinkedList<String>(Arrays.asList(args));
         if(!(sender instanceof Player)) { // console command
             if(args_l.size() == 1 && args_l.get(0).equals("update")) {

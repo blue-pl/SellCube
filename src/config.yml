@@ -2,3 +2,9 @@
 # SellCube's configuration file
 #
 
+database:
+  hostname: localhost
+  port: '3306'
+  user: bluex
+  password: bluex
+  name: bluex

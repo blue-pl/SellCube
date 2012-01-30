@@ -115,8 +115,13 @@ public class SellCube extends JavaPlugin {
         return checkPermission(player, node, true);
     }
 
+    protected static boolean checkPermission(String player, String node, String world) {
+		return pex.has(player, node, world);
+	}
+
 	protected static boolean checkPermission(Player player, String node, boolean msg) {
-		boolean permission = (pex != null) ? pex.has(player, node) : player.hasPermission(node);
+		//boolean permission = (pex != null) ? pex.has(player, node) : player.hasPermission(node);
+        boolean permission = pex.has(player, node);
 		if(permission == false && msg == true) {
 			player.sendMessage(ChatColor.RED + "Nie masz wystarczajacych uprawnien.");
 		}
@@ -220,7 +225,7 @@ public class SellCube extends JavaPlugin {
 			pluginName, player, (reg!=null)?"'"+reg+"'":"NULL", price, active?1:0, lwc_pass?1:0,
             block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
         SellCube.lwc.getPhysicalDatabase().registerProtection(
-            block.getTypeId(), Protection.Type.PRIVATE,
+            block.getTypeId(), Protection.Type.PUBLIC,
             block.getWorld().getName(), player, "",
             block.getX(), block.getY(), block.getZ());
 	}
@@ -308,15 +313,17 @@ public class SellCube extends JavaPlugin {
         }
         else
             sign.setLine(3, "---");
+        sign.setLine(0, "Gracz:");
+        sign.setLine(1, getPlayerGroupColor(player_name, sign.getWorld().getName()) + player_name);
+        sign.setLine(2, "Ostatnio byl:");
         sign.update(true);
     }
 
-    protected String getPlayerGroupColor(Player player) {
+    protected String getPlayerGroupColor(String player, String world) {
         String color = "§f";
         if(groupsColors != null) {
             String s;
-            String world_name = player.getWorld().getName();
-            for (String g : SellCube.pex.getUser(player).getGroupsNames(world_name)) {
+            for (String g : SellCube.pex.getUser(player).getGroupsNames(world)) {
                 s = groupsColors.get(g).toString();
                 if(s != null && s.matches("[0-9A-Fa-f]")) {
                     color = "§" + s.charAt(0);
