@@ -259,6 +259,10 @@ public class SellCube extends JavaPlugin {
     protected ResultSet getPlayerAd(String player_name) {
 		return db.query(String.format("SELECT * FROM %s WHERE owner='%s'", pluginName, player_name));
 	}
+
+    protected ResultSet getPlayerAd(String player_name, boolean active) {
+		return db.query(String.format("SELECT * FROM %s WHERE owner='%s' AND active=%d", pluginName, player_name, active?1:0));
+	}
 	
 	protected void removeAd(Block block) {
 		db.query(String.format("DELETE FROM %s "

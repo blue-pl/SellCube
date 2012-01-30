@@ -71,4 +71,9 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-post-jar">
+        <property name="version.num" value="0.10" />
+        <buildnumber file="build.num" />
+        <copy file="${dist.jar}" tofile="${dist.dir}/SellCube-${version.num}.${build.number}.jar" />
+    </target>
 </project>
