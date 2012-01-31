@@ -56,7 +56,7 @@ public class SellCube extends JavaPlugin {
     private int offlineDays;
     private boolean updater;
 
-    private final long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
+    private final static long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
 
 	@Override
 	public void onEnable() {
