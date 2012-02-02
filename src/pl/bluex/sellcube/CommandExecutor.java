@@ -1,18 +1,18 @@
 package pl.bluex.sellcube;
 
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedList;
 
 class SellCubeCommand implements CommandExecutor {
 	private SellCube plugin;
@@ -33,38 +33,44 @@ class SellCubeCommand implements CommandExecutor {
         }
         Player player = (Player)sender;
         boolean lwc_pass = true;
-        if(SellCube.checkPermission(player, "sellcube.sell")) {
-            if(!plugin.setupWorldGuard()) {
-                player.sendMessage(ChatColor.RED + "Nie mozna uzyskac dostepu do listy regionow");
+        
+        if(!plugin.setupWorldGuard()) {
+            player.sendMessage(ChatColor.RED + "Nie mozna uzyskac dostepu do listy regionow");
+            return true;
+        }
+        if(args_l.size() >= 1) {
+            if("cancel".equalsIgnoreCase(args_l.get(0))) {
+                cancelCommand(player);
                 return true;
             }
-            if(args_l.size() >= 1) {
-                if("cancel".equalsIgnoreCase(args_l.get(0))) {
-                    cancelCommand(player);
-                    return true;
-                }
-                else if("status".equalsIgnoreCase(args_l.get(0))) {
-                    statusCommand(player);
-                    return true;
-                }
-                else if(args_l.size() >= 2) {
-                    if("copy".equalsIgnoreCase(args_l.get(0))) {
-                        copyCommand(player, args_l.get(1));
-                        return true;
-                    }
-                    if("lp".equalsIgnoreCase(args_l.get(0))) {
-                        if(!SellCube.checkPermission(player, "sellcube.lwc_pass"))
-                            return true;
-                        lwc_pass = false;
-                        args_l.remove(0);
-                    }
-                    addCommand(player, args_l.get(0), args_l.get(1), lwc_pass);
-                    return true;
-                }
+            else if("status".equalsIgnoreCase(args_l.get(0))) {
+                statusCommand(player);
+                return true;
             }
-            return false;
+            else if("tp".equalsIgnoreCase(args_l.get(0))) {
+                teleportCommand(player);
+                return true;
+            }
+            else if("find".equalsIgnoreCase(args_l.get(0))) {
+                findCommand(player);
+                return true;
+            }
+            else if(args_l.size() >= 2) {
+                if("copy".equalsIgnoreCase(args_l.get(0))) {
+                    copyCommand(player, args_l.get(1));
+                    return true;
+                }
+                if("lp".equalsIgnoreCase(args_l.get(0))) {
+                    if(!SellCube.checkPermission(player, "sellcube.lwc_pass"))
+                        return true;
+                    lwc_pass = false;
+                    args_l.remove(0);
+                }
+                addCommand(player, args_l.get(0), args_l.get(1), lwc_pass);
+                return true;
+            }
         }
-        return true;
+        return false;
 	}
 
     protected void cancelCommand(Player player) {
@@ -76,6 +82,7 @@ class SellCubeCommand implements CommandExecutor {
     }
 
     protected void addCommand(Player player, String price, String reg_name, boolean lwc_pass) {
+        if(!SellCube.checkPermission(player, "sellcube.sell")) return;
         float _price;
         try {
             _price = Float.valueOf(price).floatValue();
@@ -109,6 +116,7 @@ class SellCubeCommand implements CommandExecutor {
     }
 
     protected void copyCommand(Player player, String id) {
+        if(!SellCube.checkPermission(player, "sellcube.sell_all")) return;
         int _id;
         try {
             _id = Integer.valueOf(id).intValue();
@@ -126,16 +134,42 @@ class SellCubeCommand implements CommandExecutor {
         }
         catch (NumberFormatException nfe) {
             player.sendMessage(ChatColor.RED + "Nieprawidlowe ID");
-            return;
         }
         catch (SQLException e) {
 			plugin.severe("SQL exception: " + e.getMessage());
-            return;
 		}
     }
 
     protected void statusCommand(Player player) {
         plugin.newAdsRN.put(player, null);
         player.sendMessage(ChatColor.BLUE + "Kliknij znak");
+    }
+
+    protected void teleportCommand(Player player) {
+        if(!SellCube.checkPermission(player, "sellcube.buy")) return;
+        if(SellCube.es == null) return;
+        try {
+            ResultSet rs = plugin.getPlayerAd(player.getName());
+            if(rs.last()) {
+                Location l = new Location(Bukkit.getWorld(rs.getString("sign_world")), rs.getInt("sign_x"), rs.getInt("sign_y"), rs.getInt("sign_z"));
+                SellCube.es.getUser(player).teleport(l);
+            }
+        } catch (SQLException e) {
+            plugin.severe("SQL exception: " + e.getMessage());
+        }
+    }
+
+    protected void findCommand(Player player) {
+        if(!SellCube.checkPermission(player, "sellcube.buy")) return;
+        if(SellCube.es == null) return;
+        try {
+            ResultSet rs = plugin.getActivedAd();
+            if(rs.first()) {
+                Location l = new Location(Bukkit.getWorld(rs.getString("sign_world")), rs.getInt("sign_x"), rs.getInt("sign_y"), rs.getInt("sign_z"));
+                SellCube.es.getUser(player).teleport(l);
+            }
+        } catch (SQLException e) {
+            plugin.severe("SQL exception: " + e.getMessage());
+        }
     }
 }

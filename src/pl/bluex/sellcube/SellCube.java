@@ -28,6 +28,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
+import com.earth2me.essentials.Essentials;
 
 
 public class SellCube extends JavaPlugin {
@@ -41,6 +42,7 @@ public class SellCube extends JavaPlugin {
 	protected PluginManager pm;
 	protected static WorldGuardPlugin wg;
 	protected static PermissionManager pex;
+    protected static Essentials es;
     protected static LWC lwc;
 	protected static MySQL db;
 	protected String pluginName = "SellCube";
@@ -86,6 +88,7 @@ public class SellCube extends JavaPlugin {
             info("Config saved");
             return;
         }
+        setupEssentials();
 		if (setupWorldGuard() && setupPermissions() && setupLWC() && setupDB()) {
 			pm.registerEvent(Event.Type.PLAYER_INTERACT, 
 					new PlayerInteract(this), Event.Priority.Highest, this);
@@ -154,6 +157,21 @@ public class SellCube extends JavaPlugin {
 				return false;
 			} else {
 				wg = (WorldGuardPlugin) worldGuard;
+			}
+		}
+		return true;
+	}
+
+    protected boolean setupEssentials() {
+		if (es == null) {
+			Plugin essentials = pm.getPlugin("Essentials");
+
+			if (essentials == null || !(essentials instanceof Essentials)) {
+				info("Essentials detection failed.");
+				es = null;
+				return false;
+			} else {
+				es = (Essentials) essentials;
 			}
 		}
 		return true;
@@ -256,6 +274,10 @@ public class SellCube extends JavaPlugin {
 
     protected ResultSet getDeactivatedAd() {
 		return db.query(String.format("SELECT * FROM %s WHERE active=0", pluginName));
+	}
+
+    protected ResultSet getActivedAd() {
+		return db.query(String.format("SELECT * FROM %s WHERE active=1", pluginName));
 	}
 
     protected ResultSet getPlayerAd(String player_name) {
