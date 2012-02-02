@@ -91,8 +91,10 @@ public class PlayerInteract extends PlayerListener {
     protected void infoAction(Player player, Block block) throws SQLException {
         ResultSet rs = plugin.getAd(block);
         if(rs.next() && rs.getBoolean("active")) {
-            if(SellCube.checkPermission(player, "sellcube.sell", false))
+            if(SellCube.checkPermission(player, "sellcube.sell", false)) {
                 player.sendMessage(ChatColor.BLUE + "ID: " + ChatColor.DARK_AQUA + rs.getString("id"));
+                player.sendMessage(ChatColor.BLUE + "Region: " + ChatColor.DARK_AQUA + rs.getString("region"));
+            }
             String owner = rs.getString("owner");
             player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + plugin.getPlayerGroupColor(owner, block.getWorld().getName()) + owner);
             player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + rs.getString("price"));

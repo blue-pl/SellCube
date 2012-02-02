@@ -93,6 +93,8 @@ public class SellCube extends JavaPlugin {
 					new PlayerLogin(this), Event.Priority.Normal, this);
             pm.registerEvent(Event.Type.PLAYER_QUIT,
 					new PlayerLogin(this), Event.Priority.Normal, this);
+            pm.registerEvent(Event.Type.PLAYER_KICK,
+					new PlayerLogin(this), Event.Priority.Normal, this);
 			pm.registerEvent(Event.Type.BLOCK_BREAK, 
 					new SignInteract(this), Event.Priority.Normal, this);
 			getCommand("sellcube").setExecutor(new SellCubeCommand(this));
@@ -263,8 +265,12 @@ public class SellCube extends JavaPlugin {
     protected ResultSet getPlayerAd(String player_name, boolean active) {
 		return db.query(String.format("SELECT * FROM %s WHERE owner='%s' AND active=%d", pluginName, player_name, active?1:0));
 	}
-	
-	protected void removeAd(Block block) {
+
+    protected void removeAd(Block block) {
+        removeAd(block, true);
+    }
+
+	protected void removeAd(Block block, boolean removeProtection) {
 		db.query(String.format("DELETE FROM %s "
                 + "WHERE sign_world='%s' AND sign_x=%d AND sign_y=%d AND sign_z=%d",
             pluginName, block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
@@ -290,10 +296,15 @@ public class SellCube extends JavaPlugin {
                 + "WHERE user='%s'", holidaysTab, player));
 	}
 
-    protected void updateSign(Sign sign, String player_name) {
-        long time = firstlastseen.getLastSeenLong(player_name);
+    protected void updateSign(Sign sign, String playerName) {
+        long time = -1;
         long now = new Date().getTime();
-        OfflinePlayer player = getServer().getOfflinePlayer(player_name);
+        OfflinePlayer player = getServer().getOfflinePlayer(playerName);
+        try {
+            time = firstlastseen.getLastSeenLong(playerName.toLowerCase());
+            //PlayerTimeStamp pts = FirstLastSeenDB.findTimeStamp(playerName);
+            //time = (pts != null) ? pts.getLastSeen().getTime() : -1;
+        } catch (Exception e) {}
         if(time != -1 && player != null) {
             Date date = new Date(time);
             String color = "§0"; // black
@@ -301,7 +312,7 @@ public class SellCube extends JavaPlugin {
                 color = "§a"; //green
             else {
                 try {
-                    ResultSet rs = getHoliday(player_name);
+                    ResultSet rs = getHoliday(playerName);
                     rs = (rs.next()) ? rs : null;
                     if(rs != null && rs.getDate("end").getTime() >= now) {
                         color = "§5"; // putple
@@ -318,7 +329,7 @@ public class SellCube extends JavaPlugin {
         else
             sign.setLine(3, "---");
         sign.setLine(0, "Gracz:");
-        sign.setLine(1, getPlayerGroupColor(player_name, sign.getWorld().getName()) + player_name);
+        sign.setLine(1, getPlayerGroupColor(playerName, sign.getWorld().getName()) + playerName);
         sign.setLine(2, "Ostatnio byl:");
         sign.update(true);
     }
@@ -328,7 +339,7 @@ public class SellCube extends JavaPlugin {
         if(groupsColors != null) {
             String s;
             for (String g : SellCube.pex.getUser(player).getGroupsNames(world)) {
-                s = groupsColors.get(g).toString();
+                s = groupsColors.get(g).toString(); // TODO: colors colection
                 if(s != null && s.matches("[0-9A-Fa-f]")) {
                     color = "§" + s.charAt(0);
                     break;

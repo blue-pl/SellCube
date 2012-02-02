@@ -18,7 +18,7 @@ public class SignInteract extends BlockListener {
 		this.plugin = instance;
 	}
 	
-    @Override
+    /*@Override
 	public void onBlockBreak(BlockBreakEvent event) {
 		if(event.isCancelled()) return;
 		Block block  = event.getBlock();
@@ -31,17 +31,17 @@ public class SignInteract extends BlockListener {
                 /*if(SellCube.checkPermission(player, "sellcube.destroy")
                         && (player.getName().equals(rs.getString("owner"))
                         || SellCube.checkPermission(player, "sellcube.destroy_all"))) {*/
-                    plugin.removeAd(block);
-                    player.sendMessage(ChatColor.BLUE + "Ogloszenie usuniete");
+                    /*plugin.removeAd(block, false);
+                    player.sendMessage(ChatColor.BLUE + "Ogloszenie usuniete");*/
 
                 /*} else {
                     event.setCancelled(true);
                 }*/
-            }
+            /*}
         } catch (SQLException e) {
             plugin.severe("SQL exception: " + e.getMessage());
         }
-	}
+	}*/
 
     @Override
     public void onSignChange(SignChangeEvent event) {

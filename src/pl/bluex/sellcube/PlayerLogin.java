@@ -22,7 +22,7 @@ public class PlayerLogin extends PlayerListener {
 
     @Override
     public void onPlayerJoin(PlayerJoinEvent event) {
-        onPlayerAction(event);
+        onPlayerActionDelayed(event);
     }
 
     @Override
