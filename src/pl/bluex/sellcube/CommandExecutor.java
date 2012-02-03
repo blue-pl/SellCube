@@ -9,10 +9,16 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.material.Directional;
+import org.bukkit.util.Vector;
 
 class SellCubeCommand implements CommandExecutor {
 	private SellCube plugin;
@@ -151,8 +157,18 @@ class SellCubeCommand implements CommandExecutor {
         try {
             ResultSet rs = plugin.getPlayerAd(player.getName());
             if(rs.last()) {
-                Location l = new Location(Bukkit.getWorld(rs.getString("sign_world")), rs.getInt("sign_x"), rs.getInt("sign_y"), rs.getInt("sign_z"));
-                SellCube.es.getUser(player).teleport(l);
+                Block block = Bukkit.getWorld(rs.getString("sign_world")).getBlockAt(rs.getInt("sign_x"), rs.getInt("sign_y"), rs.getInt("sign_z"));
+                if (!(block.getState() instanceof Sign)) return;
+                BlockFace dir = ((Directional) block.getType().getNewData(block.getData())).getFacing();
+                Vector v = new Vector(dir.getModX(), dir.getModY(), dir.getModZ());
+                Location l = block.getLocation().clone();
+                l.setPitch(0);
+                l.setYaw((float)(Math.atan2(dir.getModX(), -dir.getModZ()) * 180f / (float) Math.PI));
+                l.add(v.multiply(2));
+                l.add(0.5, 0, 0.5);
+                l.getChunk(); // force load chunk
+                plugin.info(l.toString());
+                SellCube.es.getUser(player).teleport(l, TeleportCause.COMMAND);
             }
         } catch (SQLException e) {
             plugin.severe("SQL exception: " + e.getMessage());
@@ -165,8 +181,19 @@ class SellCubeCommand implements CommandExecutor {
         try {
             ResultSet rs = plugin.getActivedAd();
             if(rs.first()) {
-                Location l = new Location(Bukkit.getWorld(rs.getString("sign_world")), rs.getInt("sign_x"), rs.getInt("sign_y"), rs.getInt("sign_z"));
-                SellCube.es.getUser(player).teleport(l);
+                Block block = Bukkit.getWorld(rs.getString("sign_world")).getBlockAt(rs.getInt("sign_x"), rs.getInt("sign_y"), rs.getInt("sign_z"));
+                if (!(block.getState() instanceof Sign)) return;
+                BlockFace dir = ((Directional) block.getType().getNewData(block.getData())).getFacing();
+                Vector v = new Vector(dir.getModX(), dir.getModY(), dir.getModZ());
+                Location l = block.getLocation().clone();
+                l.setPitch(0);
+                l.setYaw((float)(Math.atan2(dir.getModX(), -dir.getModZ()) * 180f / (float) Math.PI));
+                l.add(v.multiply(2));
+                l.add(0.5, 0, 0.5);
+                l.getChunk(); // force load chunk
+                plugin.info(l.toString());
+                SellCube.es.getUser(player).teleport(l, TeleportCause.COMMAND);
+                //player.teleport(l, TeleportCause.COMMAND);
             }
         } catch (SQLException e) {
             plugin.severe("SQL exception: " + e.getMessage());
