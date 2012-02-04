@@ -24,16 +24,16 @@ Wymagania
 * Register
 * LWC
 * [FirstLastSeenDB](https://github.com/blue-pl/FirstLastSeenDB/downloads)
-* Essentials (opcjonalnie)
+* Essentials (opcjonalnie) - używane przez teleport
 
 Permissions
 -----------
-* sellcube.sell - pozwala sprzedać region
-* sellcube.sell_all - pozwala sprzedać każdy region (nawet te których właścicielem gracz nie jest)
-* sellcube.buy - pozwala kupować regiony
-* sellcube.lwc_pass - pozwala używać parametru lp (/sc add lp ...)
-* sellcube.tp - pozwala na teleportację do ostatnio kupionego ogłoszenia
-* sellcube.find - pozwala na teleportację do pierwszego dostępnego ogłoszenia
+* `sellcube.sell` - pozwala sprzedać region
+* `sellcube.sell_all` - pozwala sprzedać każdy region (nawet te których właścicielem gracz nie jest)
+* `sellcube.buy` - pozwala kupować regiony
+* `sellcube.lwc_pass` - pozwala używać parametru lp (/sc add lp ...)
+* `sellcube.tp` - pozwala na teleportację do ostatnio kupionego ogłoszenia
+* `sellcube.find` - pozwala na teleportację do pierwszego dostępnego ogłoszenia
 
 Komendy użytkownika
 -------------------
