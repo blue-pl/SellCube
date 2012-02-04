@@ -35,7 +35,6 @@ public class SellCube extends JavaPlugin {
     protected static final HashMap<String, String> groupsColors = new HashMap<String, String>();
     protected static EbeanServer database;
     protected static String pluginName = "SellCube";
-	protected FileConfiguration config;
 	
 	private int offlineDays;
     private boolean updater;
@@ -50,13 +49,9 @@ public class SellCube extends JavaPlugin {
 	public void onEnable() {
 		pm = getServer().getPluginManager();
         pluginName = getDescription().getName();
-		config = getConfig();
-        if(config.contains("offline_days")) {
-            config.set("offline_days", 21);
-            config.set("sign_updater", true);
-            saveConfig();
-            log(Level.INFO, "Config saved");
-        }
+		FileConfiguration config = getConfig();
+        getConfig().options().copyDefaults(true);
+        saveConfig();
         offlineDays = config.getInt("offline_days");
         updater = config.getBoolean("sign_updater");
         setupDatabase();
@@ -76,6 +71,7 @@ public class SellCube extends JavaPlugin {
             getCommand("scstatus").setExecutor(new SellCubeCommand(this));
             getCommand("sctp").setExecutor(new SellCubeCommand(this));
             getCommand("scfind").setExecutor(new SellCubeCommand(this));
+            getCommand("sccopy").setExecutor(new SellCubeCommand(this));
             if(updater) {
                 getServer().getScheduler().scheduleAsyncRepeatingTask(this,
                         new SignUpdater(this), 100L, 864000L);
@@ -96,11 +92,12 @@ public class SellCube extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
+        getServer().getScheduler().cancelTasks(this);
 		log(Level.INFO, String.format("%s is disabled.", getDescription().getFullName()));
 	}
 
     protected static void log(Level level, String msg) {
-        logger.log(level, String.format("[%s]%s", pluginName, msg));
+        logger.log(level, String.format("[%s] %s", pluginName, msg));
     }
 
     protected static boolean checkPermission(Player player, String node) {

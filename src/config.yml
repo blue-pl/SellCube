@@ -1,10 +1,5 @@
 #
-# SellCube's configuration file
+# SellCube configuration file
 #
-
-database:
-  hostname: localhost
-  port: '3306'
-  user: bluex
-  password: bluex
-  name: bluex
+offline_days: 21
+sign_updater: false

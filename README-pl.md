@@ -23,54 +23,55 @@ Wymagania
 * PermissionsEx
 * Register
 * LWC
-* FirstLastSeen
+* FirstLastSeenDB
+* Essentials (opcjonalnie)
 
 Permissions
 -----------
 * sellcube.sell - pozwala sprzedać region
 * sellcube.sell_all - pozwala sprzedać każdy region (nawet te których właścicielem gracz nie jest)
 * sellcube.buy - pozwala kupować regiony
-* sellcube.lwc_pass - pozwala używać parametru lp (/sc lp ...)
+* sellcube.lwc_pass - pozwala używać parametru lp (/sc add lp ...)
+* sellcube.tp - pozwala na teleportację do ostatnio kupionego ogłoszenia
+* sellcube.find - pozwala na teleportację do pierwszego dostępnego ogłoszenia
 
 Komendy użytkownika
 -------------------
-* `/sc cena nazwa` - podstawowa wersja polecenia
-* `/sc lp cena nazwa` - polecenie z parametrem lp powoduje, że kupujący nie stanie się właścicielem tabliczki
-* `/sc cancel` - anuluje tworzenie ogłoszenia
-* `/sc status` - tworzy jedynie informację o statusie gracza
-* `/sc copy db_id` - tworzy kopię ogłoszenia na podstawie id wpisu z bazy(LWC na właściciela ogłoszenia)
+* `/sc add cena nazwa` - dodaje nowe ogłoszenie sprzedaży regionu `nazwa` za `cena` coinów (alias '/scadd')
+* `/sc add lp cena nazwa` - polecenie z parametrem lp powoduje, że kupujący nie stanie się właścicielem tabliczki po zakupie (alias '/scadd')
+* `/sc copy db_id` - tworzy kopię ogłoszenia na podstawie id wpisu z bazy (LWC na właściciela ogłoszenia) (alias `/sccopy`)
+* `/sc cancel` - anuluje tworzenie ogłoszenia (alias `/sccancel`)
+* `/sc find` - teleportuje do pierwszego dostępnego ogłoszenia (alias `/scfind`)
+* `/sc status` - tworzy jedynie informację o statusie gracza (alias `/scstatus`)
+* `/sc tp` - teleportuje do ostatnio kupionego ogłoszenia (alias `/sctp`)
 
 Komendy serwera
 ---------------
-* `/sc update[/i]` - wymusza aktualizację informacji o dostępności kupujących na wszystkich tabliczkach
+* `sc update` - wymusza aktualizację informacji o dostępności kupujących na wszystkich tabliczkach
 
-Plik konfiguracyjny
--------------------
-generowany automatycznie przy pierwszym uruchomieniu
+Pliki konfiguracyjne
+--------------------
+Config.yml generowany automatycznie przy pierwszym uruchomieniu
 
-    database:
-      hostname: localhost
-      port: '3306'
-      user: user
-      password: pass
-      name: database_name
-    misc:
-      offline_days: 21
-      sign_updater: false
+    offline_days: 21
+    sign_updater: false
 
 Dodatkowo w pliku konfiguracyjnym można dodać sekcję określająca w jakim kolorze wyświetlać nazwę użytkownika, który kupił region
 
-    database:
-      hostname: localhost # nazwa hosta
-      port: '3306' # port na którym działa mysql
-      user: user # użytkownik bazy danych
-      password: pass # hasło użytkownika
-      name: database_name # nazwa bazy danych
+    offline_days: 21 # po ilu dniach data ostatniej wizyty użytkownika będzie wyświetlona na czerwono
+    sign_updater: false # opcja włączenia/wyłączenia automatycznej aktualizacji znaków co 12h
     colors: # kolor grupy w jakim będzie wyświetlona nazwa użytkownika na nieaktywnym ogłoszeniu (po kupieniu)
       Adm: c
       Bob: e
       Mod: 2
       Dev: b
-    misc:
-      offline_days: 21 # po ilu dniach data ostatniej wizyty użytkownika będzie wyświetlona na czerwono
-      sign_updater: false # opcja włączenia/wyłączenia automatycznej aktualizacji znaków co 12h
+
+Ustawienia bazy danych są w globalnym pliku konfiguracyjnym bukkita (bukkit.yml)
+przykładowa konfiguracja sekcji database:
+
+    database:
+      username: user
+      isolation: SERIALIZABLE
+      driver: com.mysql.jdbc.Driver
+      password: pass
+      url: jdbc:mysql://localhost:3306/database_name

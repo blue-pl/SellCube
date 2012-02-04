@@ -28,7 +28,7 @@ permissions:
     description: Allows user to create ad sign which doesn't change owner after purchase
     default: op
   sellcube.tp:
-    description: Allows user to teleport last bought ad
+    description: Allows user to teleport to last bought ad
     default: true
   sellcube.find:
     description: Allows user to teleport to first active ad
@@ -39,14 +39,19 @@ commands:
     aliases: sc
     usage: |
       /<command> add [lp] cena nazwa_regionu - tworzy ogłoszenie
+      /<command> copy id - kopiuje ogłoszenie na podstawie id w bazie
       /<command> cancel - anuluje tworzenie ogłoszenia
+      /<command> find - teleportuje do pierwszego dostępnego ogłoszenia
       /<command> status - tworzy tabliczkę z informacjami o graczu
       /<command> tp - teleportuje do ostatnio kupionego ogłoszenia
-      /<command> find - teleportuje do pierwszego dostępnego ogłoszenia
   scadd:
     description: tworzy ogłoszenie
     permission: sellcube.sell
     usage: /<command> add [lp] cena nazwa_regionu
+  sccopy:
+    description: kopiuje ogłoszenie na podstawie id w bazie
+    permission: sellcube.sell
+    usage: /<command> copy id
   sccancel:
     description: anuluje tworzenie ogłoszenia
     permission: sellcube.sell
