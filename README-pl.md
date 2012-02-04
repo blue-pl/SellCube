@@ -23,7 +23,7 @@ Wymagania
 * PermissionsEx
 * Register
 * LWC
-* FirstLastSeenDB
+* [FirstLastSeenDB](https://github.com/blue-pl/FirstLastSeenDB/downloads)
 * Essentials (opcjonalnie)
 
 Permissions
@@ -37,8 +37,8 @@ Permissions
 
 Komendy użytkownika
 -------------------
-* `/sc add cena nazwa` - dodaje nowe ogłoszenie sprzedaży regionu `nazwa` za `cena` coinów (alias '/scadd')
-* `/sc add lp cena nazwa` - polecenie z parametrem lp powoduje, że kupujący nie stanie się właścicielem tabliczki po zakupie (alias '/scadd')
+* `/sc add cena nazwa` - dodaje nowe ogłoszenie sprzedaży regionu `nazwa` za `cena` coinów (alias `/scadd`)
+* `/sc add lp cena nazwa` - polecenie z parametrem lp powoduje, że kupujący nie stanie się właścicielem tabliczki po zakupie (alias `/scadd`)
 * `/sc copy db_id` - tworzy kopię ogłoszenia na podstawie id wpisu z bazy (LWC na właściciela ogłoszenia) (alias `/sccopy`)
 * `/sc cancel` - anuluje tworzenie ogłoszenia (alias `/sccancel`)
 * `/sc find` - teleportuje do pierwszego dostępnego ogłoszenia (alias `/scfind`)
