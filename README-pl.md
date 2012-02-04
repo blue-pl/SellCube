@@ -5,17 +5,17 @@ Plugin pozwalający na sprzedawanie regionów za pomocą odpowiednich tabliczek.
 Opis użycia
 -----------
 Należy postawić tabliczkę i wpisać ogłoszenie.
-Potem wpisujemy w czacie komendę: `/sellcube [lp] cena region_name` i klikamy LPM na wcześniej przygotowaną tabliczkę (alias komendy - sc)
-Przykład: `/sc 10.5 moj_region`
+Potem wpisujemy w czacie komendę: `/sellcube add [lp] cena region_name` i klikamy LPM na wcześniej przygotowaną tabliczkę
+Przykład: `/scadd 10.5 moj_region`
 
-LPM na tak przygotowaną tabliczkę powoduje wyświetlenie skróconej informacji (sprzedający i cena oraz ID jeśli aktywny perm: _sellcube.sell_)
+LPM na tak przygotowaną tabliczkę powoduje wyświetlenie skróconej informacji - sprzedający i cena (oraz ID i nazwa regionu jeśli aktywny jest perm: _sellcube.sell_)
 PPM powoduje zmianę właściciela regionu na klikającego, przelanie odpowiedniej kwoty i przedstawienie na tabliczce informacji o kupującym.
 Informacje po kupnie pokazują kto kupił region (kolory według sekcji colors w konfigu) i kiedy gracz był na serwerze (zielony - online, czarny - offline, czerwony - nieaktywny, fioletowy - na wakacjach)
 Informacje aktualizowane co 12 godzin jeśli opcja _sign_updater: true_.
 
-To czy użytkownik jest na wakacjach plugin określa na podstawie wpisów tabeli SellCube_holidays w postaci _(INT id, VARCHAR(255) user, DATE end)_
+To czy użytkownik jest na wakacjach plugin określa na podstawie informacji z wtyczki FirstLastSeenDB
 
-Tabliczki chronione są za pomocą LWC w trybie prywatnym dla użytkownika, który stworzył tabliczkę (aktywna i nieaktywna w trybie LP) lub nowego właściciela regionu (nieaktywna bez trybu LP)
+Tabliczki chronione są za pomocą LWC w trybie publicznym dla użytkownika, który stworzył tabliczkę (aktywna i nieaktywna w trybie LP) lub nowego właściciela regionu (nieaktywna bez trybu LP)
 
 Wymagania
 ---------
