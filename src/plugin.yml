@@ -38,28 +38,28 @@ commands:
     description: Zarządza ogłoszeniami
     aliases: sc
     usage: |
-      /<command> add [lp] cena nazwa_regionu - tworzy ogłoszenie
-      /<command> copy id - kopiuje ogłoszenie na podstawie id w bazie
-      /<command> cancel - anuluje tworzenie ogłoszenia
-      /<command> find - teleportuje do pierwszego dostępnego ogłoszenia
-      /<command> status - tworzy tabliczkę z informacjami o graczu
-      /<command> tp - teleportuje do ostatnio kupionego ogłoszenia
+      /<command> add [lp] cena nazwa_regionu - tworzy ogloszenie
+      /<command> copy id - kopiuje ogloszenie na podstawie id w bazie
+      /<command> cancel - anuluje tworzenie ogloszenia
+      /<command> find - teleportuje do pierwszego dostepnego ogloszenia
+      /<command> status - tworzy tabliczke z informacjami o graczu
+      /<command> tp - teleportuje do ostatnio kupionego ogloszenia
   scadd:
-    description: tworzy ogłoszenie
+    description: tworzy ogloszenie
     permission: sellcube.sell
     usage: /<command> add [lp] cena nazwa_regionu
   sccopy:
-    description: kopiuje ogłoszenie na podstawie id w bazie
+    description: kopiuje ogloszenie na podstawie id w bazie
     permission: sellcube.sell
     usage: /<command> copy id
   sccancel:
-    description: anuluje tworzenie ogłoszenia
+    description: anuluje tworzenie ogloszenia
     permission: sellcube.sell
   scstatus:
-    description: tworzy tabliczkę z informacjami o graczu
+    description: tworzy tabliczke z informacjami o graczu
   sctp:
-    description: teleportuje do ostatnio kupionego ogłoszenia
+    description: teleportuje do ostatnio kupionego ogloszenia
     permission: sellcube.tp
   scfind:
-    description: teleportuje do pierwszego dostępnego ogłoszenia
+    description: teleportuje do pierwszego dostepnego ogloszenia
     permission: sellcube.find
