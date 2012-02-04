@@ -1,5 +1,5 @@
-SellCube 1.10.1
-===============
+SellCube 1.0
+============
 Plugin pozwalający na sprzedawanie regionów za pomocą odpowiednich tabliczek.
 
 Opis użycia
@@ -66,8 +66,8 @@ Dodatkowo w pliku konfiguracyjnym można dodać sekcję określająca w jakim ko
       Mod: 2
       Dev: b
 
-Ustawienia bazy danych są w globalnym pliku konfiguracyjnym bukkita (bukkit.yml)
-przykładowa konfiguracja sekcji database:
+Ustawienia bazy danych są w globalnym pliku konfiguracyjnym bukkita (bukkit.yml).
+Przykładowa konfiguracja sekcji database:
 
     database:
       username: user
