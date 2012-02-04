@@ -1,9 +1,10 @@
 name: SellCube
 main: pl.bluex.sellcube.SellCube
-version: '0.10'
+version: '1.0'
 description: Plugin pozwalajacy sprzedawać regiony za pomoca znakow
 author: BlueX
 depend: [PermissionsEx]
+database: true
 permissions:
   sellcube.*:
     description: Gives access to all SellCube permissions
@@ -26,12 +27,34 @@ permissions:
   sellcube.lwc_pass:
     description: Allows user to create ad sign which doesn't change owner after purchase
     default: op
+  sellcube.tp:
+    description: Allows user to teleport last bought ad
+    default: true
+  sellcube.find:
+    description: Allows user to teleport to first active ad
+    default: true
 commands:
   sellcube:
-    description: Creates an ad
+    description: Zarządza ogłoszeniami
     aliases: sc
-    permission: sellcube.sell
     usage: |
-      /<command> [lp] cena nazwa_regionu - tworzy ogłoszenie
+      /<command> add [lp] cena nazwa_regionu - tworzy ogłoszenie
       /<command> cancel - anuluje tworzenie ogłoszenia
       /<command> status - tworzy tabliczkę z informacjami o graczu
+      /<command> tp - teleportuje do ostatnio kupionego ogłoszenia
+      /<command> find - teleportuje do pierwszego dostępnego ogłoszenia
+  scadd:
+    description: tworzy ogłoszenie
+    permission: sellcube.sell
+    usage: /<command> add [lp] cena nazwa_regionu
+  sccancel:
+    description: anuluje tworzenie ogłoszenia
+    permission: sellcube.sell
+  scstatus:
+    description: tworzy tabliczkę z informacjami o graczu
+  sctp:
+    description: teleportuje do ostatnio kupionego ogłoszenia
+    permission: sellcube.tp
+  scfind:
+    description: teleportuje do pierwszego dostępnego ogłoszenia
+    permission: sellcube.find

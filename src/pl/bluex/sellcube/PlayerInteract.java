@@ -1,10 +1,15 @@
 package pl.bluex.sellcube;
 
+import com.griefcraft.model.Protection;
+import com.nijikokun.register.payment.Method;
+import com.nijikokun.register.payment.Method.MethodAccount;
+import com.nijikokun.register.payment.Methods;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Set;
-
+import java.util.logging.Level;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -14,13 +19,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
-
-import com.griefcraft.model.Protection;
-import com.nijikokun.register.payment.Method;
-import com.nijikokun.register.payment.Method.MethodAccount;
-import com.nijikokun.register.payment.Methods;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 public class PlayerInteract extends PlayerListener {
 	private SellCube plugin;
@@ -45,116 +43,86 @@ public class PlayerInteract extends PlayerListener {
     	if(!ma.find()) return;
 		float price = Float.parseFloat(ma.group());*/
 
-        try {
-			ResultSet rs = plugin.getAd(block);
-			rs = (rs.next()) ? rs : null;
-
-	        if (action == Action.LEFT_CLICK_BLOCK) {
-	    		if(plugin.newAdsRN.containsKey(player)) {
-                    if(plugin.newAdsRN.get(player) != null)
-                        addAction(player, block);
-                    else
-                        statusAction(player, block);
-	    		}
-                else if(plugin.newAdsID.containsKey(player)) {
-                    copyAction(player, block);
-                }
-                else if(rs != null) { // if(znak_w_bazie)
-					infoAction(player, block);
-	        	}
-	        }
-	        else if (action == Action.RIGHT_CLICK_BLOCK) {
-	        	buyAction(player, block);
-                //event.setCancelled(true);
-	        }
-        } catch (SQLException e) {
-			plugin.severe("SQL exception: " + e.getMessage());
-		}
-    }
-
-    protected void addAction(Player player, Block block) throws SQLException {
-        ResultSet rs = plugin.getAd(block);
-        String regionName = plugin.newAdsRN.get(player);
-        float price = plugin.newAdsP.get(player);
-        boolean lwc_pass = plugin.newAdsLWC.get(player);
-        if(rs.next()) {
-            player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
-        } else {
-            plugin.addAd(player.getName(), regionName, price, block, lwc_pass);
-            plugin.newAdsRN.remove(player);
-            plugin.newAdsP.remove(player);
-            plugin.newAdsLWC.remove(player);
-            player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
-        }
-    }
-
-    protected void infoAction(Player player, Block block) throws SQLException {
-        ResultSet rs = plugin.getAd(block);
-        if(rs.next() && rs.getBoolean("active")) {
-            if(SellCube.checkPermission(player, "sellcube.sell", false)) {
-                player.sendMessage(ChatColor.BLUE + "ID: " + ChatColor.DARK_AQUA + rs.getString("id"));
-                player.sendMessage(ChatColor.BLUE + "Region: " + ChatColor.DARK_AQUA + rs.getString("region"));
+        AdSign ad = AdSign.get(block);
+        if (action == Action.LEFT_CLICK_BLOCK) {
+            if(ad != null) { // if(znak_w_bazie)
+                infoAction(player, ad);
             }
-            String owner = rs.getString("owner");
-            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + plugin.getPlayerGroupColor(owner, block.getWorld().getName()) + owner);
-            player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + rs.getString("price"));
+            else if(SellCube.newAds.containsKey(player)) {
+                ad = SellCube.newAds.get(player);
+                if(ad.getSignWorld() != null)
+                    copyAction(player, block, ad);
+                else if(ad.getRegion() != null)
+                    addAction(player, block, ad);
+                else if(ad.getActive() == false)
+                    statusAction(player, block, ad);
+            }
+        }
+        else if (action == Action.RIGHT_CLICK_BLOCK) {
+            if(ad != null) {
+                buyAction(player, ad);
+            }
+            else {
+                player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
+            }
         }
     }
 
-    protected void copyAction(Player player, Block block) throws SQLException {
-        ResultSet rs = plugin.getAd(block);
-        if(rs.next()) {
-            player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
-            return;
-        }
-        rs = plugin.getAd(plugin.newAdsID.get(player));
-        rs.next();
-        plugin.addAd(rs.getString("owner"), rs.getString("region"), rs.getFloat("price"), block, rs.getBoolean("lwc_pass"));
+    protected void addAction(Player player, Block block, AdSign ad) {
+        ad.setSignBlock(block);
+        ad.add();
+        SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
-        plugin.newAdsID.remove(player);
+    }
+
+    protected void infoAction(Player player, AdSign ad) {
+        if(ad.getActive()) {
+            if(SellCube.checkPermission(player, "sellcube.sell", false)) {
+                player.sendMessage(ChatColor.BLUE + "ID: " + ChatColor.DARK_AQUA + ad.getId().toString());
+                player.sendMessage(ChatColor.BLUE + "Region: " + ChatColor.DARK_AQUA + ad.getRegion());
+            }
+            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + SellCube.getPlayerGroupColor(ad.getOwner(), ad.getSignWorld()) + ad.getOwner());
+            player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + ad.getPrice());
+        }
+    }
+
+    protected void copyAction(Player player, Block block, AdSign ad) {
+        ad.setSignBlock(block);
+        ad.add();
+        SellCube.newAds.remove(player);
+        player.sendMessage(ChatColor.BLUE + "Ogloszenie skopiowane");
     }
     
-    protected void statusAction(Player player, Block block) throws SQLException {
-        ResultSet rs = plugin.getAd(block);
-        if(rs.next()) {
-            player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
-            return;
-        }
-        String playerName = player.getName();
-        plugin.addAd(player.getName(), null, 0, block, true, false);
-        plugin.updateSign((Sign) block.getState(), playerName);
-        plugin.newAdsRN.remove(player);
+    protected void statusAction(Player player, Block block, AdSign ad) {
+        ad.setSignBlock(block);
+        ad.add();
+        ad.updateOwnerInfo();
+        SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Informacja utworzona");
     }
 
-    protected void buyAction(Player player, Block block) throws SQLException {
-        ResultSet rs = plugin.getAd(block);
-        if(rs.next() && rs.getBoolean("active") == true && SellCube.checkPermission(player, "sellcube.buy")) {
+    protected void buyAction(Player player, AdSign ad) {
+        if(ad.getActive() && SellCube.checkPermission(player, "sellcube.buy")) {
             String buyerName = player.getName();
-            String sellerName = rs.getString("owner");
-            String regionName = rs.getString("region");
-            boolean active = rs.getBoolean("active");
-            boolean lwc_pass = rs.getBoolean("lwc_pass");
-            float price = Float.valueOf(rs.getString("price")).floatValue();
+            String sellerName = ad.getOwner();
+            String regionName = ad.getRegion();
+            double price = ad.getPrice().doubleValue();
+            Block block = ad.getSignBlock();
 
             // Check region
             RegionManager manager = SellCube.wg.getGlobalRegionManager().get(player.getWorld());
             ProtectedRegion region = manager.getRegion(regionName);
-            if(active) {
-                if(region == null || !(region.getOwners().getPlayers().contains(sellerName) ||
-                        SellCube.checkPermission(sellerName, "sellcube.sell_all", block.getWorld().getName()))) {
-                    Protection protection = SellCube.lwc.findProtection(block);
-                    if(protection != null) {
-                        protection.remove();
-                        protection.save();
-                    }
-                    plugin.removeAd(block);
+            if(region == null ||
+                    !(region.getOwners().getPlayers().contains(sellerName) ||
+                      SellCube.checkPermission(sellerName, "sellcube.sell_all", ad.getSignWorld()))) {
+                if(block != null) {
+                    ad.remove();
                     block.setType(Material.AIR);
                     block.getWorld().dropItemNaturally(block.getLocation(),
                             new ItemStack(Material.SIGN, 1));
-                    player.sendMessage(ChatColor.RED + "Ogloszenie nieaktualne");
-                    return;
                 }
+                player.sendMessage(ChatColor.RED + "Ogloszenie nieaktualne");
+                return;
             }
 
             // Check accounts
@@ -178,7 +146,7 @@ public class PlayerInteract extends PlayerListener {
                     ChatColor.GREEN + "c z twojego konta (stan " +
                     ChatColor.DARK_AQUA + buyerMA.balance() +
                     ChatColor.GREEN + "c)");
-            Player seller = plugin.getServer().getPlayer(sellerName);
+            Player seller = Bukkit.getPlayer(sellerName);
             if(seller != null) {
                 seller.sendMessage(ChatColor.GREEN + "Przelano " +
                         ChatColor.DARK_AQUA + price +
@@ -196,24 +164,20 @@ public class PlayerInteract extends PlayerListener {
                 region.getOwners().addPlayer(buyerName);
                 manager.save();
             } catch (IOException e) {
-                plugin.warning("Region save error: " +  e.getMessage());
+                SellCube.log(Level.WARNING, "Region save error: " +  e.getMessage());
                 return;
             }
 
-            // Update sign
-            /*int n = regionName.length();
-            sign.setLine(2, regionName.substring(0, (n > 15) ? 15 : n));*/
-            plugin.updateSign((Sign) block.getState(), buyerName);
-            plugin.deactivateAd(block, buyerName);
-
             // Change sign owner
-            if(lwc_pass) {
-                Protection protection = SellCube.lwc.findProtection(block);
-                if(protection != null) {
-                    protection.setOwner(buyerName);
-                    protection.save();
-                }
-            }
+            ad.changeOwner(buyerName);
+            
+            // Deactivate ad
+            ad.setActive(false);
+
+            // Update sign
+            ad.updateOwnerInfo();
+
+            ad.save();
         }
     }
 }
