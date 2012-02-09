@@ -1,16 +1,11 @@
 package pl.bluex.sellcube;
 
-import com.avaje.ebean.ExpressionList;
-import com.griefcraft.model.Protection;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.logging.Level;
 import javax.persistence.*;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import pl.bluex.firstlastseendb.PlayerTimeStamp;
 
 @Entity
 @Table(name = "sellcube", uniqueConstraints = {
@@ -39,10 +34,8 @@ public class AdSign {
     private int signY;
     @Column(name = "sign_z", nullable = false)
     private int signZ;
-
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy");
-    private static long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
-    private static int offlineDays = 21;
+    @Version
+    private int version;
 
     public AdSign() {
     }
@@ -141,147 +134,35 @@ public class AdSign {
         this.signZ = signZ;
     }
 
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
     public Block getSignBlock() {
-        Block block = Bukkit.getWorld(this.signWorld).getBlockAt(signX, signY, signZ);
+        Block block = Bukkit.getWorld(signWorld).getBlockAt(signX, signY, signZ);
         if (block.getState() instanceof Sign) {
             return block;
         }
         if(id != null) {
-            remove();
-            SellCube.log(Level.INFO, "Block is not sign. Ad removed " + toString());
+            AdSignManager.remove(this);
+            SellCube.log(Level.INFO, String.format("Block (%d,%d,%d,%s) is not sign. Ad removed", signX, signY, signZ, signWorld));
         }
         return null;
     }
 
     public void setSignBlock(Block block) {
-        /*setSignWorld(block.getWorld().getName());
+        //signWorld = block.getWorld().getName();
+        //signX = block.getX();
+        //signY = block.getY();
+        //signZ = block.getZ();
+        setSignWorld(block.getWorld().getName());
         setSignX(block.getX());
         setSignY(block.getY());
-        setSignZ(block.getZ());*/
-        signWorld = block.getWorld().getName();
-        signX = block.getX();
-        signY = block.getY();
-        signZ = block.getZ();
+        setSignZ(block.getZ());
     }
     // </editor-fold>
-
-    public void changeOwner(String owner) {
-        this.owner = owner;
-        if(lwcPass) {
-            Protection protection = SellCube.lwc.findProtection(Bukkit.getWorld(signWorld), signX, signY, signZ);
-            if(protection != null) {
-                protection.setOwner(owner);
-                protection.save();
-            }
-        }
-    }
-
-    public void add() {
-        add(true);
-    }
-
-    public void add(boolean addProtection) {
-        Block block = getSignBlock();
-        if(block == null) return;
-        SellCube.database.insert(this);
-        if(addProtection) {
-            SellCube.lwc.getPhysicalDatabase().registerProtection(
-                block.getTypeId(), Protection.Type.PUBLIC,
-                signWorld, owner, "",
-                signX, signY, signZ);
-        }
-    }
-
-    public void remove() {
-        remove(true);
-    }
-
-    public void remove(boolean removeProtection) {
-        SellCube.database.delete(this);
-        if(removeProtection) {
-            Protection protection = SellCube.lwc.findProtection(Bukkit.getWorld(signWorld), signX, signY, signZ);
-            if(protection != null) {
-                protection.remove();
-                protection.save();
-            }
-        }
-    }
-
-    public void save() {
-        SellCube.log(Level.INFO, "Saving ad");
-        SellCube.database.save(this);
-    }
-
-    public AdSign copy() {
-        AdSign ad = this.copy();
-        ad.id = null;
-        return ad;
-    }
-
-    public static AdSign get(int id) {
-        return SellCube.database.find(AdSign.class)
-                .where()
-                .eq("id", id)
-                .findUnique();
-    }
-
-    public static ExpressionList<AdSign> get(boolean active) {
-        return SellCube.database.find(AdSign.class)
-                .where()
-                .eq("active", active);
-    }
-
-    public static ExpressionList<AdSign> get(String playerName) {
-        return SellCube.database.find(AdSign.class)
-                .where()
-                .ieq("owner", playerName);
-    }
-
-    public static ExpressionList<AdSign> get(String playerName, boolean active) {
-        return SellCube.database.find(AdSign.class)
-                .where()
-                .ieq("owner", playerName)
-                .eq("active", active);
-    }
-
-    public static AdSign get(Block block) {
-        return SellCube.database.find(AdSign.class)
-                .where()
-                .ieq("sign_world", block.getWorld().getName())
-                .eq("sign_x", block.getX())
-                .eq("sign_y", block.getY())
-                .eq("sign_z", block.getZ())
-                .findUnique();
-    }
-
-    protected void updateOwnerInfo() {
-        updateOwnerInfo(Bukkit.getOfflinePlayer(owner).isOnline());
-    }
-
-    protected void updateOwnerInfo(boolean online) {
-        if(active == true) return;
-        Sign sign = (Sign)getSignBlock().getState();
-        PlayerTimeStamp pts = PlayerTimeStamp.get(owner);
-        long now = new Date().getTime();
-        if(pts != null) {
-            String color = "§0"; // black
-            if(online)
-                color = "§a"; //green
-            else {
-                if(pts.getHoliday() != null && pts.getHoliday().getTime() >= now) {
-                    color = "§5"; // putple
-                }
-                else if((now - pts.getLastSeen().getTime()) / MILLSECS_PER_DAY > offlineDays) {
-                    color = "§4"; // red
-                }
-            }
-            sign.setLine(3, color + dateFormat.format(pts.getLastSeen()));
-        }
-        else
-            sign.setLine(3, "---");
-        sign.setLine(0, "Gracz:");
-        sign.setLine(1, SellCube.getPlayerGroupColor(owner, signWorld) + owner);
-        sign.setLine(2, "Ostatnio byl:");
-        sign.update(true);
-    }
 }

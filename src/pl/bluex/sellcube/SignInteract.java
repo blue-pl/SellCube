@@ -21,10 +21,10 @@ public class SignInteract extends BlockListener {
 		Block block  = event.getBlock();
 		Player player = event.getPlayer();
         if (!(block.getState() instanceof Sign)) return;
-        AdSign ad = AdSign.get(block);
+        AdSign ad = AdSignManager.get(block);
         if(ad != null) {
             if(SellCube.lwc.findProtection(block) == null || SellCube.lwc.canAdminProtection(player, block)) {
-                ad.remove();
+                AdSignManager.remove(ad);
                 player.sendMessage(ChatColor.BLUE + "Ogloszenie usuniete");
 
             } else {
@@ -38,7 +38,7 @@ public class SignInteract extends BlockListener {
         if(event.isCancelled()) return;
 		Block block  = event.getBlock();
         if (!(block.getState() instanceof Sign)) return;
-        AdSign ad = AdSign.get(block);
+        AdSign ad = AdSignManager.get(block);
         if(ad != null) {
             event.setCancelled(true);
         }

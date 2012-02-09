@@ -1,6 +1,5 @@
 package pl.bluex.sellcube;
 
-import com.griefcraft.model.Protection;
 import com.nijikokun.register.payment.Method;
 import com.nijikokun.register.payment.Method.MethodAccount;
 import com.nijikokun.register.payment.Methods;
@@ -38,39 +37,37 @@ public class PlayerInteract extends PlayerListener {
 
         if (!(block.getState() instanceof Sign)) return;
         
+        AdSign ad = AdSignManager.get(block);
 
-    	/*Matcher ma = Pattern.compile("[0-9]*\\.?[0-9]+").matcher(sign.getLine(3));
-    	if(!ma.find()) return;
-		float price = Float.parseFloat(ma.group());*/
-
-        AdSign ad = AdSign.get(block);
         if (action == Action.LEFT_CLICK_BLOCK) {
-            if(ad != null) { // if(znak_w_bazie)
+            if(ad != null) {
                 infoAction(player, ad);
             }
-            else if(SellCube.newAds.containsKey(player)) {
-                ad = SellCube.newAds.get(player);
-                if(ad.getSignWorld() != null)
-                    copyAction(player, block, ad);
-                else if(ad.getRegion() != null)
-                    addAction(player, block, ad);
-                else if(ad.getActive() == false)
-                    statusAction(player, block, ad);
+            if(SellCube.newAds.containsKey(player)) {
+                if(ad != null) {
+                    player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
+                }
+                else {
+                    ad = SellCube.newAds.get(player);
+                    if(ad.getSignWorld() != null)
+                        copyAction(player, block, ad);
+                    else if(ad.getRegion() != null)
+                        addAction(player, block, ad);
+                    else if(ad.getActive() == false)
+                        statusAction(player, block, ad);
+                }
             }
         }
         else if (action == Action.RIGHT_CLICK_BLOCK) {
             if(ad != null) {
                 buyAction(player, ad);
             }
-            else {
-                player.sendMessage(ChatColor.RED + "Ten znak jest juz ogloszeniem");
-            }
         }
     }
 
     protected void addAction(Player player, Block block, AdSign ad) {
         ad.setSignBlock(block);
-        ad.add();
+        AdSignManager.add(ad);
         SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
     }
@@ -81,22 +78,22 @@ public class PlayerInteract extends PlayerListener {
                 player.sendMessage(ChatColor.BLUE + "ID: " + ChatColor.DARK_AQUA + ad.getId().toString());
                 player.sendMessage(ChatColor.BLUE + "Region: " + ChatColor.DARK_AQUA + ad.getRegion());
             }
-            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + SellCube.getPlayerGroupColor(ad.getOwner(), ad.getSignWorld()) + ad.getOwner());
+            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + SellCube.getPlayerGroupColor(ad.getOwner()) + ad.getOwner());
             player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + ad.getPrice());
         }
     }
 
     protected void copyAction(Player player, Block block, AdSign ad) {
         ad.setSignBlock(block);
-        ad.add();
+        AdSignManager.add(ad);
         SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Ogloszenie skopiowane");
     }
     
     protected void statusAction(Player player, Block block, AdSign ad) {
         ad.setSignBlock(block);
-        ad.add();
-        ad.updateOwnerInfo();
+        AdSignManager.add(ad);
+        AdSignManager.updateSign(ad);
         SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Informacja utworzona");
     }
@@ -116,7 +113,7 @@ public class PlayerInteract extends PlayerListener {
                     !(region.getOwners().getPlayers().contains(sellerName) ||
                       SellCube.checkPermission(sellerName, "sellcube.sell_all", ad.getSignWorld()))) {
                 if(block != null) {
-                    ad.remove();
+                    AdSignManager.remove(ad);
                     block.setType(Material.AIR);
                     block.getWorld().dropItemNaturally(block.getLocation(),
                             new ItemStack(Material.SIGN, 1));
@@ -169,15 +166,13 @@ public class PlayerInteract extends PlayerListener {
             }
 
             // Change sign owner
-            ad.changeOwner(buyerName);
-            
+            AdSignManager.changeOwner(ad, buyerName);
             // Deactivate ad
             ad.setActive(false);
+            AdSignManager.save(ad);
 
             // Update sign
-            ad.updateOwnerInfo();
-
-            ad.save();
+            AdSignManager.updateSign(ad);
         }
     }
 }

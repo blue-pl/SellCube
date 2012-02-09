@@ -3,7 +3,8 @@ main: pl.bluex.sellcube.SellCube
 version: '1.0'
 description: Plugin pozwalajacy sprzedawać regiony za pomoca znakow
 author: BlueX
-depend: [PermissionsEx]
+depend: [WorldGuard, PermissionsEx, FirstLastSeenDB]
+softdepend : [Essentials]
 database: true
 permissions:
   sellcube.*:

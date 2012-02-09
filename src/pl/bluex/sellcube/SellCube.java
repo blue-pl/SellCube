@@ -193,8 +193,8 @@ public class SellCube extends JavaPlugin {
         return list;
     }
 
-    protected static String getPlayerGroupColor(String player, String world) {
-        for (String g : SellCube.pex.getUser(player).getGroupsNames(world)) {
+    protected static String getPlayerGroupColor(String player) {
+        for (String g : SellCube.pex.getUser(player).getGroupsNames()) {
             if(groupsColors.containsKey(g)) {
                 return groupsColors.get(g);
             }

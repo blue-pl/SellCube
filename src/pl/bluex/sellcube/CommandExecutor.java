@@ -5,7 +5,6 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -53,7 +52,8 @@ class SellCubeCommand implements CommandExecutor {
             else if("copy".equalsIgnoreCase(command))
                 return copyCommand(player, argsl);
             else if(argsl.size() >= 2)
-                return addCommand(player, argsl);
+                if("add".equalsIgnoreCase(command))
+                    return addCommand(player, argsl);
         return false;
 	}
 
@@ -76,7 +76,7 @@ class SellCubeCommand implements CommandExecutor {
         if(!lwcPass && !SellCube.checkPermission(player, "sellcube.lwc_pass")) return true;
         BigDecimal price;
         try {
-            price = new BigDecimal(argsl.get(0));
+            price = new BigDecimal(argsl.get(argsl.size() - 2));
             if(price.intValue() > 9999) {
                 player.sendMessage(ChatColor.RED + "Zbyt wysoka cena");
                 return true;
@@ -86,7 +86,7 @@ class SellCubeCommand implements CommandExecutor {
             player.sendMessage(ChatColor.RED + "Nieprawidlowa cena");
                 return true;
         }
-        String regName = argsl.get(1);
+        String regName = argsl.get(argsl.size() - 1);
         if(regName.equalsIgnoreCase("__global__")) {
             player.sendMessage(ChatColor.RED + "Niedostepna nazwa regionu");
             return true;
@@ -115,7 +115,7 @@ class SellCubeCommand implements CommandExecutor {
         if(!SellCube.checkPermission(player, "sellcube.sell_all")) return true;
         if(argsl.size() != 1) return false;
         try {
-            AdSign ad = AdSign.get(Integer.valueOf(argsl.get(0)).intValue());
+            AdSign ad = AdSignManager.get(Integer.valueOf(argsl.get(0)).intValue());
             if(ad == null) {
                 player.sendMessage(ChatColor.RED + "Brak ID w bazie danych");
                 return true;
@@ -124,7 +124,7 @@ class SellCubeCommand implements CommandExecutor {
                 player.sendMessage(ChatColor.RED + "Wybrane ogloszenie jest nieaktywne");
                 return true;
             }
-            SellCube.newAds.put(player, ad.copy());
+            SellCube.newAds.put(player, AdSignManager.copy(ad));
             player.sendMessage(ChatColor.BLUE + "Kliknij znak");
         }
         catch (NumberFormatException nfe) {
@@ -146,27 +146,29 @@ class SellCubeCommand implements CommandExecutor {
     protected boolean teleportCommand(Player player) {
         if(!SellCube.checkPermission(player, "sellcube.tp")
                 || SellCube.es == null) return true;
-        QueryIterator<AdSign> query = AdSign.get(player.getName(), false).order().desc("id").findIterate();
+        QueryIterator<AdSign> query = AdSignManager.get(player.getName(), false).order().desc("id").findIterate();
         while(query.hasNext()) {
             AdSign ad = query.next();
             Block block = ad.getSignBlock();
             if(block == null || ad.getRegion() == null) continue;
             SellCube.teleport(player, block);
-            break;
+            return true;
         }
+        player.sendMessage(ChatColor.RED + "Nie kupiles zadnego regionu");
         return true;
     }
 
     protected boolean findCommand(Player player) {
         if(!SellCube.checkPermission(player, "sellcube.tp")
                 || SellCube.es == null) return true;
-        QueryIterator<AdSign> query = AdSign.get(true).order().asc("id").findIterate();
+        QueryIterator<AdSign> query = AdSignManager.get(true).order().asc("id").findIterate();
         while(query.hasNext()) {
             Block block = query.next().getSignBlock();
             if(block == null) continue;
             SellCube.teleport(player, block);
-            break;
+            return true;
         }
+        player.sendMessage(ChatColor.RED + "Nie kupiles zadnego regionu");
         return true;
     }
 }

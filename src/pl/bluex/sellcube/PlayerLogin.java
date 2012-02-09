@@ -1,6 +1,5 @@
 package pl.bluex.sellcube;
 
-import com.avaje.ebean.QueryIterator;
 import java.util.logging.Level;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -28,12 +27,7 @@ public class PlayerLogin extends PlayerListener {
     private void onPlayerAction(PlayerEvent event, boolean online) {
         String player_name = event.getPlayer().getName();
         SellCube.log(Level.INFO, "Updating " + player_name + " signs");
-        QueryIterator<AdSign> query = AdSign.get(player_name, false).findIterate();
-        while(query.hasNext()) {
-            AdSign ad = query.next();
-            if(ad.getSignBlock() != null)
-                ad.updateOwnerInfo(online);
-        }
+        AdSignManager.updateSigns(player_name, online);
     }
 
     private void onPlayerActionDelayed(final PlayerEvent event, final boolean online) {
