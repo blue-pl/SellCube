@@ -36,7 +36,6 @@ public class SellCube extends JavaPlugin {
     protected static EbeanServer database;
     protected static String pluginName = "SellCube";
 	
-	private int offlineDays;
     private boolean updater;
 
     protected static PluginManager pm;
@@ -52,7 +51,7 @@ public class SellCube extends JavaPlugin {
 		FileConfiguration config = getConfig();
         getConfig().options().copyDefaults(true);
         saveConfig();
-        offlineDays = config.getInt("offline_days");
+        AdSignManager.offlineDays = config.getInt("offline_days");
         updater = config.getBoolean("sign_updater");
         setupDatabase();
         setupEssentials();

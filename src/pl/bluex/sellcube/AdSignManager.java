@@ -12,9 +12,9 @@ import org.bukkit.block.Sign;
 import pl.bluex.firstlastseendb.PlayerTimeStamp;
 
 public class AdSignManager {
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy");
-    private static long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
-    private static int offlineDays = 21;
+    protected static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy");
+    protected static long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
+    protected static int offlineDays = 21;
 
     public static void changeOwner(AdSign ad, String owner) {
         //this.owner = owner;
