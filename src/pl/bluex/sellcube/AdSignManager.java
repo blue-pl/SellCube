@@ -6,18 +6,40 @@ import com.avaje.ebean.SqlRow;
 import com.griefcraft.model.Protection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import pl.bluex.firstlastseendb.PlayerTimeStamp;
+import pl.bluex.firstlastseendb.PlayerTimeStampManager;
 
 public class AdSignManager {
     protected static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy");
     protected static long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
     protected static int offlineDays = 21;
 
+    public static Block getSignBlock(AdSign ad) {
+        Block block = Bukkit.getWorld(ad.getSignWorld()).getBlockAt(ad.getSignX(), ad.getSignY(), ad.getSignZ());
+        if (block.getState() instanceof Sign) {
+            return block;
+        }
+        if(ad.getId() != null) {
+            SellCube.log(Level.INFO, String.format(
+                    "Block (%d,%d,%d,%s) is not sign. Ad removed",
+                    ad.getSignX(), ad.getSignY(), ad.getSignZ(), ad.getSignWorld()));
+            remove(ad);
+        }
+        return null;
+    }
+
+    public static void setSignBlock(AdSign ad, Block block) {
+        ad.setSignWorld(block.getWorld().getName());
+        ad.setSignX(block.getX());
+        ad.setSignY(block.getY());
+        ad.setSignZ(block.getZ());
+    }
+
     public static void changeOwner(AdSign ad, String owner) {
-        //this.owner = owner;
         ad.setOwner(owner);
         if(ad.getLwcPass()) {
             Protection protection = SellCube.lwc.findProtection(
@@ -35,7 +57,7 @@ public class AdSignManager {
     }
 
     public static void add(AdSign ad, boolean addProtection) {
-        Block block = ad.getSignBlock();
+        Block block = getSignBlock(ad);
         if(block == null) return;
         //SellCube.database.insert(this);
         save(ad);
@@ -116,7 +138,7 @@ public class AdSignManager {
     }
 
     public static void updateSign(AdSign ad, boolean online) {
-        updateSign(ad, online, PlayerTimeStamp.get(ad.getOwner()));
+        updateSign(ad, online, PlayerTimeStampManager.get(ad.getOwner()));
     }
 
     public static void updateSign(AdSign ad, boolean online, PlayerTimeStamp pts) {
@@ -125,7 +147,7 @@ public class AdSignManager {
 
     public static void updateSign(AdSign ad, boolean online, PlayerTimeStamp pts, String ownerColor) {
         if(ad.getActive() == true) return;
-        Block block = ad.getSignBlock();
+        Block block = getSignBlock(ad);
         if(block == null) return;
         Sign sign = (Sign)block.getState();
         long now = new Date().getTime();
@@ -166,7 +188,7 @@ public class AdSignManager {
     }
 
     public static void updateSigns(String owner, boolean online) {
-        PlayerTimeStamp pts = PlayerTimeStamp.get(owner);
+        PlayerTimeStamp pts = PlayerTimeStampManager.get(owner);
         String ownerColor = SellCube.getPlayerGroupColor(owner);
         for(AdSign ad : get(owner, false)/*.select("owner, signX, signY, signZ, signWorld")*/.findList()) {
             updateSign(ad, online, pts, ownerColor);

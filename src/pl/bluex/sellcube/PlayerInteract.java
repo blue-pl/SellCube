@@ -14,19 +14,20 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
 
-public class PlayerInteract extends PlayerListener {
-	private SellCube plugin;
+public class PlayerInteract implements Listener {
 	
-	public PlayerInteract(SellCube instance){
-		plugin = instance;
+	public PlayerInteract(SellCube plugin){
+		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 	
-    @Override
+    @EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if(event.isCancelled()) return;
 		Action action = event.getAction();
@@ -66,7 +67,7 @@ public class PlayerInteract extends PlayerListener {
     }
 
     protected void addAction(Player player, Block block, AdSign ad) {
-        ad.setSignBlock(block);
+        AdSignManager.setSignBlock(ad, block);
         AdSignManager.add(ad);
         SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
@@ -84,14 +85,14 @@ public class PlayerInteract extends PlayerListener {
     }
 
     protected void copyAction(Player player, Block block, AdSign ad) {
-        ad.setSignBlock(block);
+        AdSignManager.setSignBlock(ad, block);
         AdSignManager.add(ad);
         SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Ogloszenie skopiowane");
     }
     
     protected void statusAction(Player player, Block block, AdSign ad) {
-        ad.setSignBlock(block);
+        AdSignManager.setSignBlock(ad, block);
         AdSignManager.add(ad);
         AdSignManager.updateSign(ad);
         SellCube.newAds.remove(player);
@@ -104,8 +105,10 @@ public class PlayerInteract extends PlayerListener {
             String sellerName = ad.getOwner();
             String regionName = ad.getRegion();
             double price = ad.getPrice().doubleValue();
-            Block block = ad.getSignBlock();
+            Block block = AdSignManager.getSignBlock(ad);
 
+            if(block == null) return;
+            
             // Check region
             RegionManager manager = SellCube.wg.getGlobalRegionManager().get(player.getWorld());
             ProtectedRegion region = manager.getRegion(regionName);

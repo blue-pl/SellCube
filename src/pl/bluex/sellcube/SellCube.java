@@ -35,14 +35,17 @@ public class SellCube extends JavaPlugin {
     protected static final HashMap<String, String> groupsColors = new HashMap<String, String>();
     protected static EbeanServer database;
     protected static String pluginName = "SellCube";
-	
-    private boolean updater;
 
     protected static PluginManager pm;
     protected static WorldGuardPlugin wg;
 	protected static PermissionManager pex;
     protected static Essentials es;
     protected static LWC lwc;
+
+    private PlayerInteract playerInteract = null;
+    private PlayerLogin playerLogin = null;
+    private SignInteract signInteract = null;
+    private SellCubeCommand sellCubeCommand = null;
 
 	@Override
 	public void onEnable() {
@@ -52,25 +55,21 @@ public class SellCube extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveConfig();
         AdSignManager.offlineDays = config.getInt("offline_days");
-        updater = config.getBoolean("sign_updater");
+        boolean updater = config.getBoolean("sign_updater");
         setupDatabase();
         setupEssentials();
 		if (setupWorldGuard() && setupPermissions() && setupLWC()) {
-			pm.registerEvent(Event.Type.PLAYER_INTERACT, 
-					new PlayerInteract(this), Event.Priority.Highest, this);
-            pm.registerEvent(Event.Type.PLAYER_JOIN,
-					new PlayerLogin(this), Event.Priority.Normal, this);
-            pm.registerEvent(Event.Type.PLAYER_QUIT,
-					new PlayerLogin(this), Event.Priority.Normal, this);
-            pm.registerEvent(Event.Type.BLOCK_BREAK, 
-					new SignInteract(this), Event.Priority.Normal, this);
-			getCommand("sellcube").setExecutor(new SellCubeCommand(this));
-            getCommand("scadd").setExecutor(new SellCubeCommand(this));
-            getCommand("sccancel").setExecutor(new SellCubeCommand(this));
-            getCommand("scstatus").setExecutor(new SellCubeCommand(this));
-            getCommand("sctp").setExecutor(new SellCubeCommand(this));
-            getCommand("scfind").setExecutor(new SellCubeCommand(this));
-            getCommand("sccopy").setExecutor(new SellCubeCommand(this));
+			playerInteract = new PlayerInteract(this);
+            playerLogin = new PlayerLogin(this);
+            signInteract = new SignInteract(this);
+            sellCubeCommand = new SellCubeCommand(this);
+			getCommand("sellcube").setExecutor(sellCubeCommand);
+            getCommand("scadd").setExecutor(sellCubeCommand);
+            getCommand("sccancel").setExecutor(sellCubeCommand);
+            getCommand("scstatus").setExecutor(sellCubeCommand);
+            getCommand("sctp").setExecutor(sellCubeCommand);
+            getCommand("scfind").setExecutor(sellCubeCommand);
+            getCommand("sccopy").setExecutor(sellCubeCommand);
             if(updater) {
                 getServer().getScheduler().scheduleAsyncRepeatingTask(this,
                         new SignUpdater(this), 100L, 864000L);

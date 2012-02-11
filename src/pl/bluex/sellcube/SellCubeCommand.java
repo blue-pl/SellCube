@@ -149,7 +149,7 @@ class SellCubeCommand implements CommandExecutor {
         QueryIterator<AdSign> query = AdSignManager.get(player.getName(), false).order().desc("id").findIterate();
         while(query.hasNext()) {
             AdSign ad = query.next();
-            Block block = ad.getSignBlock();
+            Block block = AdSignManager.getSignBlock(ad);
             if(block == null || ad.getRegion() == null) continue;
             SellCube.teleport(player, block);
             return true;
@@ -163,7 +163,7 @@ class SellCubeCommand implements CommandExecutor {
                 || SellCube.es == null) return true;
         QueryIterator<AdSign> query = AdSignManager.get(true).order().asc("id").findIterate();
         while(query.hasNext()) {
-            Block block = query.next().getSignBlock();
+            Block block = AdSignManager.getSignBlock(query.next());
             if(block == null) continue;
             SellCube.teleport(player, block);
             return true;
