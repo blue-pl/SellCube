@@ -67,7 +67,7 @@ public class PlayerInteract implements Listener {
     }
 
     protected void addAction(Player player, Block block, AdSign ad) {
-        AdSignManager.setSignBlock(ad, block);
+        ad.setSignBlock(block);
         AdSignManager.add(ad);
         SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Ogloszenie utworzone");
@@ -85,14 +85,14 @@ public class PlayerInteract implements Listener {
     }
 
     protected void copyAction(Player player, Block block, AdSign ad) {
-        AdSignManager.setSignBlock(ad, block);
+        ad.setSignBlock(block);
         AdSignManager.add(ad);
         SellCube.newAds.remove(player);
         player.sendMessage(ChatColor.BLUE + "Ogloszenie skopiowane");
     }
     
     protected void statusAction(Player player, Block block, AdSign ad) {
-        AdSignManager.setSignBlock(ad, block);
+        ad.setSignBlock(block);
         AdSignManager.add(ad);
         AdSignManager.updateSign(ad);
         SellCube.newAds.remove(player);
@@ -105,7 +105,7 @@ public class PlayerInteract implements Listener {
             String sellerName = ad.getOwner();
             String regionName = ad.getRegion();
             double price = ad.getPrice().doubleValue();
-            Block block = AdSignManager.getSignBlock(ad);
+            Block block = ad.getSignBlock();
 
             if(block == null) return;
             

@@ -1,7 +1,11 @@
 package pl.bluex.sellcube;
 
 import java.math.BigDecimal;
+import java.util.logging.Level;
 import javax.persistence.*;
+import org.bukkit.Bukkit;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 
 @Entity
 @Table(name = "sellcube", uniqueConstraints = {
@@ -136,6 +140,29 @@ public class AdSign {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    @Transient
+    public Block getSignBlock() {
+        Block block = Bukkit.getWorld(getSignWorld()).getBlockAt(getSignX(), getSignY(), getSignZ());
+        if (block.getState() instanceof Sign) {
+            return block;
+        }
+        if(getId() != null) {
+            SellCube.log(Level.INFO, String.format(
+                    "Block (%d,%d,%d,%s) is not sign. Ad removed",
+                    getSignX(), getSignY(), getSignZ(), getSignWorld()));
+            AdSignManager.remove(this);
+        }
+        return null;
+    }
+
+    @Transient
+    public void setSignBlock(Block block) {
+        setSignWorld(block.getWorld().getName());
+        setSignX(block.getX());
+        setSignY(block.getY());
+        setSignZ(block.getZ());
     }
     // </editor-fold>
 }

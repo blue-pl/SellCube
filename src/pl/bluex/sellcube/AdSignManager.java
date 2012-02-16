@@ -18,27 +18,6 @@ public class AdSignManager {
     protected static long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
     protected static int offlineDays = 21;
 
-    public static Block getSignBlock(AdSign ad) {
-        Block block = Bukkit.getWorld(ad.getSignWorld()).getBlockAt(ad.getSignX(), ad.getSignY(), ad.getSignZ());
-        if (block.getState() instanceof Sign) {
-            return block;
-        }
-        if(ad.getId() != null) {
-            SellCube.log(Level.INFO, String.format(
-                    "Block (%d,%d,%d,%s) is not sign. Ad removed",
-                    ad.getSignX(), ad.getSignY(), ad.getSignZ(), ad.getSignWorld()));
-            remove(ad);
-        }
-        return null;
-    }
-
-    public static void setSignBlock(AdSign ad, Block block) {
-        ad.setSignWorld(block.getWorld().getName());
-        ad.setSignX(block.getX());
-        ad.setSignY(block.getY());
-        ad.setSignZ(block.getZ());
-    }
-
     public static void changeOwner(AdSign ad, String owner) {
         ad.setOwner(owner);
         if(ad.getLwcPass()) {
@@ -57,7 +36,7 @@ public class AdSignManager {
     }
 
     public static void add(AdSign ad, boolean addProtection) {
-        Block block = getSignBlock(ad);
+        Block block = ad.getSignBlock();
         if(block == null) return;
         //SellCube.database.insert(this);
         save(ad);
@@ -147,7 +126,7 @@ public class AdSignManager {
 
     public static void updateSign(AdSign ad, boolean online, PlayerTimeStamp pts, String ownerColor) {
         if(ad.getActive() == true) return;
-        Block block = getSignBlock(ad);
+        Block block = ad.getSignBlock();
         if(block == null) return;
         Sign sign = (Sign)block.getState();
         long now = new Date().getTime();

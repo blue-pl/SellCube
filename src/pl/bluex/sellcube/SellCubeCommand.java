@@ -1,6 +1,5 @@
 package pl.bluex.sellcube;
 
-import com.avaje.ebean.QueryIterator;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -51,9 +50,8 @@ class SellCubeCommand implements CommandExecutor {
                 return findCommand(player);
             else if("copy".equalsIgnoreCase(command))
                 return copyCommand(player, argsl);
-            else if(argsl.size() >= 2)
-                if("add".equalsIgnoreCase(command))
-                    return addCommand(player, argsl);
+            else if("add".equalsIgnoreCase(command))
+                return addCommand(player, argsl);
         return false;
 	}
 
@@ -146,11 +144,9 @@ class SellCubeCommand implements CommandExecutor {
     protected boolean teleportCommand(Player player) {
         if(!SellCube.checkPermission(player, "sellcube.tp")
                 || SellCube.es == null) return true;
-        QueryIterator<AdSign> query = AdSignManager.get(player.getName(), false).order().desc("id").findIterate();
-        while(query.hasNext()) {
-            AdSign ad = query.next();
-            Block block = AdSignManager.getSignBlock(ad);
-            if(block == null || ad.getRegion() == null) continue;
+        for(AdSign ad : AdSignManager.get(player.getName(), false).where().isNotNull("region").order().desc("id").findList()) {
+            Block block = ad.getSignBlock();
+            if(block == null) continue;
             SellCube.teleport(player, block);
             return true;
         }
@@ -161,9 +157,8 @@ class SellCubeCommand implements CommandExecutor {
     protected boolean findCommand(Player player) {
         if(!SellCube.checkPermission(player, "sellcube.tp")
                 || SellCube.es == null) return true;
-        QueryIterator<AdSign> query = AdSignManager.get(true).order().asc("id").findIterate();
-        while(query.hasNext()) {
-            Block block = AdSignManager.getSignBlock(query.next());
+        for(AdSign ad : AdSignManager.get(true).order().asc("id").findList()) {
+            Block block = ad.getSignBlock();
             if(block == null) continue;
             SellCube.teleport(player, block);
             return true;

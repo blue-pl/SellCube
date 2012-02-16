@@ -4,6 +4,7 @@ import com.avaje.ebean.EbeanServer;
 import com.earth2me.essentials.Essentials;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
+import com.nijikokun.register.listeners.server;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.material.Directional;
 import org.bukkit.plugin.Plugin;
@@ -107,8 +107,7 @@ public class SellCube extends JavaPlugin {
 	}
 
 	protected static boolean checkPermission(Player player, String node, boolean msg) {
-		//boolean permission = (pex != null) ? pex.has(player, node) : player.hasPermission(node);
-        boolean permission = pex.has(player, node);
+		boolean permission = (pex != null) ? pex.has(player, node) : player.hasPermission(node);
 		if(permission == false && msg == true) {
 			player.sendMessage(ChatColor.RED + "Nie masz wystarczajacych uprawnien.");
 		}
@@ -192,6 +191,7 @@ public class SellCube extends JavaPlugin {
     }
 
     protected static String getPlayerGroupColor(String player) {
+        if(pex == null) return "§f";
         for (String g : SellCube.pex.getUser(player).getGroupsNames()) {
             if(groupsColors.containsKey(g)) {
                 return groupsColors.get(g);
