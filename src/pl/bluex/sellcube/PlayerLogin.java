@@ -1,62 +1,40 @@
 package pl.bluex.sellcube;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerListener;
+import pl.bluex.sellcube.entities.AdSignManager;
 
 
-public class PlayerLogin extends PlayerListener {
-	private SellCube plugin;
+public class PlayerLogin implements Listener {
 
-	public PlayerLogin(SellCube instance){
-		plugin = instance;
+	public PlayerLogin(SellCube plugin){
+		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 
-    @Override
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        onPlayerAction(event);
+        onPlayerAction(event, true);
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(final PlayerQuitEvent event) {
-        onPlayerActionDelayed(event);
+        onPlayerAction(event, false);
+    }
+    
+    private void onPlayerAction(PlayerEvent event, boolean online) {
+        String player_name = event.getPlayer().getName();
+        SellCube.log(Level.INFO, "Updating " + player_name + " signs");
+        AdSignManager.updateSigns(player_name, online);
     }
 
-    @Override
-    public void onPlayerKick(final PlayerKickEvent event) {
-        onPlayerActionDelayed(event);
-    }
-
-
-
-    private void onPlayerAction(PlayerEvent event) {
-        try {
-            String player_name = event.getPlayer().getName();
-            plugin.info("Updating " + player_name + " signs");
-            ResultSet rs = plugin.getPlayerAd(player_name, false);
-            while(rs.next()) {
-                Block block = Bukkit.getWorld(rs.getString("sign_world")).getBlockAt(rs.getInt("sign_x"), rs.getInt("sign_y"), rs.getInt("sign_z"));
-                if (!(block.getState() instanceof Sign)) {
-                    plugin.removeAd(block);
-                    continue;
-                }
-                plugin.updateSign((Sign)block.getState(), rs.getString("owner"));
-            }
-        } catch (SQLException e) {
-            plugin.severe("SQL exception: " + e.getMessage());
-        }
-    }
-
-    private void onPlayerActionDelayed(final PlayerEvent event) {
-        class R implements Runnable {public void run() {onPlayerAction(event);}}
-        plugin.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, new R(), 20);
-    }
+    /*private void onPlayerActionDelayed(final PlayerEvent event, final boolean online) {
+        class R implements Runnable {public void run() {onPlayerAction(event, online);}}
+        Bukkit.getServer().getScheduler().scheduleAsyncDelayedTask(plugin, new R(), 20);
+    }*/
 }

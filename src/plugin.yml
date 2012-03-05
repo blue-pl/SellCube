@@ -1,9 +1,11 @@
 name: SellCube
 main: pl.bluex.sellcube.SellCube
-version: '0.10'
+version: '1.0'
 description: Plugin pozwalajacy sprzedawać regiony za pomoca znakow
 author: BlueX
-depend: [PermissionsEx]
+depend: [WorldGuard, Vault, PermissionsEx, FirstLastSeenDB]
+softdepend : [Essentials]
+database: true
 permissions:
   sellcube.*:
     description: Gives access to all SellCube permissions
@@ -15,23 +17,64 @@ permissions:
   sellcube.sell:
     description: Allows user to create an ad
     default: true
+    children:
+      sellcube.*.sell: true
   sellcube.sell_all:
     description: Allows user to create an ad of all regions
     default: op
     children:
+      sellcube.*.sell_all: true
       sellcube.sell: true
   sellcube.buy:
     description: Allows user to buy cube
     default: true
+    children:
+      sellcube.*.buy: true
   sellcube.lwc_pass:
     description: Allows user to create ad sign which doesn't change owner after purchase
     default: op
+  sellcube.rent:
+    description: Allows user to modify an ad to be rentable
+    default: op
+    children:
+      sellcube.*.rent: true
+  sellcube.tp:
+    description: Allows user to teleport to last bought ad
+    default: true
+    children:
+      sellcube.*.tp: true
+  sellcube.find:
+    description: Allows user to teleport to first active ad
+    default: true
+    children:
+      sellcube.*.find: true
 commands:
   sellcube:
-    description: Creates an ad
+    description: Zarządza ogłoszeniami
     aliases: sc
-    permission: sellcube.sell
     usage: |
-      /<command> [lp] cena nazwa_regionu - tworzy ogłoszenie
-      /<command> cancel - anuluje tworzenie ogłoszenia
-      /<command> status - tworzy tabliczkę z informacjami o graczu
+      /<command> add [lp] [r] cena nazwa_regionu - tworzy ogloszenie
+      /<command> copy id - kopiuje ogloszenie na podstawie id w bazie
+      /<command> cancel - anuluje tworzenie ogloszenia
+      /<command> find - teleportuje do pierwszego dostepnego ogloszenia
+      /<command> status - tworzy tabliczke z informacjami o graczu
+      /<command> tp - teleportuje do ostatnio kupionego ogloszenia
+  scadd:
+    description: tworzy ogloszenie
+    permission: sellcube.sell
+    usage: /<command> add [lp] [r] cena nazwa_regionu
+  sccopy:
+    description: kopiuje ogloszenie na podstawie id w bazie
+    permission: sellcube.sell
+    usage: /<command> copy id
+  sccancel:
+    description: anuluje tworzenie ogloszenia
+    permission: sellcube.sell
+  scstatus:
+    description: tworzy tabliczke z informacjami o graczu
+  sctp:
+    description: teleportuje do ostatnio kupionego ogloszenia
+    permission: sellcube.tp
+  scfind:
+    description: teleportuje do pierwszego dostepnego ogloszenia
+    permission: sellcube.find

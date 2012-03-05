@@ -1,61 +1,50 @@
 package pl.bluex.sellcube;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.block.BlockListener;
+import pl.bluex.sellcube.entities.AdSign;
+import pl.bluex.sellcube.entities.AdSignManager;
 
-public class SignInteract extends BlockListener {
-	private SellCube plugin;
+public class SignInteract implements Listener {
 	
-	public SignInteract(SellCube instance) {
-		this.plugin = instance;
+	public SignInteract(SellCube plugin) {
+		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 	
-    @Override
+    @EventHandler(priority = EventPriority.NORMAL)
 	public void onBlockBreak(BlockBreakEvent event) {
 		if(event.isCancelled()) return;
 		Block block  = event.getBlock();
 		Player player = event.getPlayer();
         if (!(block.getState() instanceof Sign)) return;
-        try {
-            ResultSet rs = plugin.getAd(block);
-            rs = (rs.next()) ? rs : null;
-            if(rs != null) {
-                /*if(SellCube.checkPermission(player, "sellcube.destroy")
-                        && (player.getName().equals(rs.getString("owner"))
-                        || SellCube.checkPermission(player, "sellcube.destroy_all"))) {*/
-                    plugin.removeAd(block);
-                    player.sendMessage(ChatColor.BLUE + "Ogloszenie usuniete");
+        AdSign ad = AdSignManager.get(block);
+        if(ad != null) {
+            if(SellCube.lwc.findProtection(block) == null || SellCube.lwc.canAdminProtection(player, block)) {
+                AdSignManager.remove(ad);
+                player.sendMessage(ChatColor.BLUE + "Ogloszenie usuniete");
 
-                /*} else {
-                    event.setCancelled(true);
-                }*/
+            } else {
+                event.setCancelled(true);
             }
-        } catch (SQLException e) {
-            plugin.severe("SQL exception: " + e.getMessage());
         }
 	}
 
-    @Override
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onSignChange(SignChangeEvent event) {
         if(event.isCancelled()) return;
 		Block block  = event.getBlock();
         if (!(block.getState() instanceof Sign)) return;
-        try {
-            ResultSet rs = plugin.getAd(block);
-            rs = (rs.next()) ? rs : null;
-            if(rs != null) {
-                event.setCancelled(true);
-            }
-        } catch (SQLException e) {
-            plugin.severe("SQL exception: " + e.getMessage());
+        AdSign ad = AdSignManager.get(block);
+        if(ad != null) {
+            event.setCancelled(true);
         }
     }
 }

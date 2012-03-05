@@ -1,10 +1,31 @@
 #
-# SellCube's configuration file
+# SellCube configuration file
 #
+offline_days: 21
+sign_updater: false
+groups:
+  default:
+    color: f
+    limits:
+      buy:
+        default: -1 # infinite
+      rent:
+        default: 0 # can't
+      sell:
+        default: 0
+    tp: true
+    find: true
+    sell_all: false
+  example_group:
+    color: 9
+    limits:
+      buy:
+        city: 2
+        village: 10
+      rent:
+        default: 1
+        city: 0
+      sell:
+        default: 2
+        village: 5
 
-database:
-  hostname: localhost
-  port: '3306'
-  user: bluex
-  password: bluex
-  name: bluex
