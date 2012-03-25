@@ -1,31 +1,13 @@
 #
 # SellCube configuration file
 #
-offline_days: 21
-sign_updater: false
-groups:
-  default:
-    color: f
-    limits:
-      buy:
-        default: -1 # infinite
-      rent:
-        default: 0 # can't
-      sell:
-        default: 0
-    tp: true
-    find: true
-    sell_all: false
-  example_group:
-    color: 9
-    limits:
-      buy:
-        city: 2
-        village: 10
-      rent:
-        default: 1
-        city: 0
-      sell:
-        default: 2
-        village: 5
-
+max_rent_days: 14    # max ammount of days region can be rent
+offline_days: 21     # after this time, region is considered abandoned
+sign_updater: false  # automatic sign updates every 12 h
+colors:
+  default: f         # based on name of player primary group
+location_groups:
+  default:           # permission group name
+    default:         # location name
+      buy:  1
+      rent: 1

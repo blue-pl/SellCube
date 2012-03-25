@@ -10,7 +10,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import pl.bluex.firstlastseendb.PlayerTimeStamp;
 import pl.bluex.firstlastseendb.PlayerTimeStampManager;
+import pl.bluex.sellcube.Permissions;
 import pl.bluex.sellcube.SellCube;
+import pl.bluex.sellcube.utils.Utils;
 
 public class AdSignManager {
     protected static final long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -99,6 +101,24 @@ public class AdSignManager {
                 .findUnique();
     }
 
+    public static int getAdCountBuy(String playerName) {
+        return SellCube.database.find(AdSign.class)
+                .where()
+                .ieq("owner", playerName)
+                .eq("active", false)
+                .eq("rental", false)
+                .findRowCount();
+    }
+
+    public static int getAdCountRent(String playerName) {
+        return SellCube.database.find(AdSign.class)
+                .where()
+                .ieq("owner", playerName)
+                .eq("active", false)
+                .eq("rental", true)
+                .findRowCount();
+    }
+
     public static void updateSign(AdSign ad) {
         updateSign(ad, Bukkit.getOfflinePlayer(ad.getOwner()).isOnline());
     }
@@ -108,7 +128,7 @@ public class AdSignManager {
     }
 
     public static void updateSign(AdSign ad, boolean online, PlayerTimeStamp pts) {
-        updateSign(ad, online, pts, SellCube.getPlayerGroupColor(ad.getOwner(), ad.getSignWorld()));
+        updateSign(ad, online, pts, Permissions.getPlayerColor(ad.getOwner(), ad.getSignWorld()));
     }
 
     public static void updateSign(AdSign ad, boolean online, PlayerTimeStamp pts, String ownerColor) {
@@ -130,12 +150,12 @@ public class AdSignManager {
                     color = "§4"; // red
                 }
             }
-            sign.setLine(3, color + SellCube.dateFormat.format(pts.getLastSeen()));
+            sign.setLine(3, color + Utils.dateFormat.format(pts.getLastSeen()));
         }
         else
             sign.setLine(3, "---");
         sign.setLine(0, "Gracz:");
-        sign.setLine(1, ownerColor + ad.getOwner());
+        sign.setLine(1, Permissions.getPlayerColor(ownerColor, ownerColor) + ad.getOwner());
         sign.setLine(2, "Ostatnio byl:");
         sign.update(true);
     }
@@ -155,9 +175,8 @@ public class AdSignManager {
 
     public static void updateSigns(String owner, boolean online) {
         PlayerTimeStamp pts = PlayerTimeStampManager.get(owner);
-        String ownerColor = SellCube.getPlayerGroupColor(owner);
         for(AdSign ad : get(owner, false)/*.select("owner, signX, signY, signZ, signWorld")*/.findList()) {
-            updateSign(ad, online, pts, ownerColor);
+            updateSign(ad, online, pts);
         }
     }
 }

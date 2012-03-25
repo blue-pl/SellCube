@@ -1,9 +1,13 @@
 package pl.bluex.sellcube;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import pl.bluex.sellcube.entities.AdSignManager;
+import pl.bluex.sellcube.utils.Utils;
 
 public enum Permissions {
     sell,
@@ -15,11 +19,28 @@ public enum Permissions {
     find;
 
     private static final String prefix = "sellcube";
-    private static final String defaults = "default";
-    private static ConfigurationSection cs;
+    private static String defaultColor;
+    private static ConfigurationSection locGroups;
+    private static HashMap<String, String> groupsColors;
+    protected static int maxRentDays;
 
-    public void init(SellCube plugin) {
-        // TODO: init code
+    public static void init(FileConfiguration config) {
+        ConfigurationSection gc = config.getConfigurationSection("colors");
+        if(gc != null) {
+            String s;
+            for (String key : gc.getKeys(true)) {
+                s = gc.get(key).toString();
+                if(s.matches("[0-9A-Fa-f]")) {
+                    groupsColors.put(key, "§" + s.charAt(0));
+                }
+                else {
+                    Utils.log(Level.WARNING, String.format("Wrong color setting (%s: %s)", key, s));
+                }
+            }
+        }
+        defaultColor = config.getString("colors.default", "§f");
+        locGroups = config.getConfigurationSection("location_groups");
+        maxRentDays = config.getInt("max_rent_days");
     }
 
     public static boolean has(Player player, Permissions node) {
@@ -35,10 +56,10 @@ public enum Permissions {
 		return has(player, sNode, msg);
 	}
     
-    public static boolean has(Player player, Permissions node, String locationType, boolean msg) {
-        if(locationType == null || locationType.isEmpty())
+    public static boolean has(Player player, Permissions node, String locationGroup, boolean msg) {
+        if(locationGroup == null || locationGroup.isEmpty())
             return has(player, node, msg);
-        String sNode = String.format("%s.%s.%s", prefix, locationType, node.name());
+        String sNode = String.format("%s.%s.%s", prefix, locationGroup, node.name());
 		return has(player, sNode, msg);
 	}
 
@@ -54,64 +75,46 @@ public enum Permissions {
 		return SellCube.permission.has(world, player, String.format("%s.%s", prefix, node.name()));
 	}
 
-    public static boolean has(String player, Permissions node, String locationType, String world) {
-		return SellCube.permission.has(world, player, String.format("%s.%s.%s", prefix, locationType, node.name()));
+    public static boolean has(String player, Permissions node, String locationGroup, String world) {
+		return SellCube.permission.has(world, player, String.format("%s.%s.%s", prefix, locationGroup, node.name()));
 	}
 
-    public static boolean can(Player player, Permissions node, String locationType) {
-        if(locationType == null)
-            locationType = "default";
-        //SellCube.pex.getUser(player).getPermissions(prefix); // TODO: get player permissions
-        //SellCube.permission.
-        String group;
-        if(node == sell || node == buy || node == rent) {
-            Integer limit = getLimit(group, node.name(), locationType);
-        }
-        //cs.contains(prefix);
-        return false;
+    public static String getPlayerColor(String player, String world) {
+        String c = groupsColors.get(SellCube.permission.getPrimaryGroup(world, player));
+        if(c != null) return c;
+        else return defaultColor;
     }
 
-    private static Integer getLimit(String group, String node, String location) {
-        return getLimit(group, node, location, false);
+    public static boolean can(Player player, String location, Permissions node) {
+        return can(player, location, node, true);
     }
 
-    private static Integer getLimit(String group, String node, String location, Boolean recurrent) {
-        if(group == null)
-            group = defaults;
-        if(node == null)
-            node = defaults;
-        if(location == null)
-            location = defaults;
-        String paths[];
-        if(recurrent == false) {
-            String _paths[] = {
-                String.format("%s.limits.%s.%s", group, node, location),
-                String.format("%s.limits.%s.%s", group, node, defaults),
-                String.format("%s.limits.%s.%s", defaults, node, location),
-                String.format("%s.limits.%s.%s", defaults, node, defaults)
-            };
-            paths = _paths;
+    public static boolean can(Player player, String location, Permissions node, boolean msg) {
+        int val;
+        switch(node) {
+            case buy: 
+                val = AdSignManager.getAdCountBuy(player.getName());
+                break;
+            case rent:
+                val = AdSignManager.getAdCountRent(player.getName());
+                break;
+            default: return has(player, node, location);
         }
-        else {
-            String _paths[] = {
-                String.format("%s.limits.%s.%s", group, node, location)
-            };
-            paths = _paths;
+        int limit = getLimit(player.getName(), player.getWorld().getName(), location, node);
+        if(val > limit) {
+            player.sendMessage(ChatColor.RED + "Limit wykorzystany.");
+            return false;
         }
-        Integer limit;
-        for(String path : paths) {
-            limit = cs.getInt(path);
-            if(limit != null)
-                return limit;
-            List<String> parents = cs.getStringList(String.format("%s.inherit", group));
-            if(parents != null) {
-                for(String parent_group : parents) {
-                    limit = getLimit(parent_group, node, location, true);
-                    if(limit != null)
-                        return limit;
-                }
+        return true;
+    }
+
+    private static Integer getLimit(String player, String world, String location, Permissions node) {
+        int limit = 0;
+        for(String locGroup : locGroups.getKeys(false)) {
+            if(has(player, node, locGroup, world)) {
+                limit = Math.max(limit, locGroups.getInt(String.format("%s.%s.%s", locGroup, location, node.name()), -1));
             }
         }
-        return null;
+        return limit;
     }
 }

@@ -1,5 +1,6 @@
 package pl.bluex.sellcube;
 
+import pl.bluex.sellcube.utils.Utils;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -29,7 +30,7 @@ public class PlayerLogin implements Listener {
     
     private void onPlayerAction(PlayerEvent event, boolean online) {
         String player_name = event.getPlayer().getName();
-        SellCube.log(Level.INFO, "Updating " + player_name + " signs");
+        Utils.log(Level.INFO, "Updating " + player_name + " signs");
         AdSignManager.updateSigns(player_name, online);
     }
 

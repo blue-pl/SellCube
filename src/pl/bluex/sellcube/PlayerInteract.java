@@ -2,9 +2,7 @@ package pl.bluex.sellcube;
 
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import java.io.IOException;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.Date;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -19,8 +17,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import pl.bluex.sellcube.entities.AdSign;
 import pl.bluex.sellcube.entities.AdSignManager;
+import pl.bluex.sellcube.utils.Economy;
+import pl.bluex.sellcube.utils.Region;
+import pl.bluex.sellcube.utils.Utils;
 
 public class PlayerInteract implements Listener {
+
 	
 	public PlayerInteract(SellCube plugin){
 		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
@@ -53,14 +55,17 @@ public class PlayerInteract implements Listener {
                         //copyAction(player, block, ad);
                     if(ad.getRegion() != null)
                         addAction(player, block, ad);
-                    else if(ad.getActive() == false)
+                    else
                         statusAction(player, block, ad);
                 }
             }
         }
         else if (action == Action.RIGHT_CLICK_BLOCK) {
             if(ad != null) {
-                buyAction(player, ad);
+                if(!ad.getRental())
+                    buyAction(player, ad);
+                else
+                    rentAction(player, ad);
             }
         }
     }
@@ -78,8 +83,16 @@ public class PlayerInteract implements Listener {
                 player.sendMessage(ChatColor.BLUE + "ID: " + ChatColor.DARK_AQUA + ad.getId().toString());
                 player.sendMessage(ChatColor.BLUE + "Region: " + ChatColor.DARK_AQUA + ad.getRegion());
             }
-            player.sendMessage(ChatColor.BLUE + "Sprzedajacy: " + SellCube.getPlayerGroupColor(ad.getSeller()) + ad.getSeller());
+            player.sendMessage(
+                    ChatColor.BLUE + ((!ad.getRental())?"Sprzedajacy: ":"Wynajmujacy: ") +
+                    Permissions.getPlayerColor(ad.getSeller(), ad.getSignWorld()) + ad.getSeller());
             player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + ad.getPrice());
+        }
+        else if(ad.getRental() && ad.getOwner() != null && ad.getOwner().equals(player.getName())) {
+            player.sendMessage(ChatColor.BLUE + ("Wynajmujacy: ") +
+                    Permissions.getPlayerColor(ad.getSeller(), ad.getSignWorld()) + ad.getSeller());
+            player.sendMessage(ChatColor.BLUE + "Cena: " + ChatColor.DARK_AQUA + ad.getPrice());
+            player.sendMessage(ChatColor.BLUE + "Wynajete do: " + ChatColor.DARK_AQUA + Utils.dateFormat.format(ad.getRentedTo()));
         }
     }
 
@@ -99,22 +112,63 @@ public class PlayerInteract implements Listener {
     }
 
     protected void buyAction(Player player, AdSign ad) {
-        if(ad.getActive() && Permissions.has(player, Permissions.buy, ad.getLocationType())) {
-            String buyerName = player.getName();
-            String sellerName = ad.getOwner();
-            String regionName = ad.getRegion();
-            double price = ad.getPrice().doubleValue();
-            Block block = ad.getSignBlock();
-            String locationType = ad.getLocationType();
+        if(!ad.getActive()) return;
+        String locationType = ad.getLocationType();
+        if(!Permissions.can(player, locationType, Permissions.buy)) return;
+        String buyerName = player.getName();
+        String sellerName = ad.getOwner();
+        String regionName = ad.getRegion();
+        double price = ad.getPrice().doubleValue();
 
-            if(block == null) return;
-            
+        // Check region
+        RegionManager manager = SellCube.wg.getGlobalRegionManager().get(player.getWorld());
+        ProtectedRegion region = manager.getRegion(regionName);
+        if(region == null ||
+                !(region.getOwners().getPlayers().contains(sellerName) ||
+                    Permissions.has(sellerName, Permissions.sell_all, locationType, ad.getSignWorld()))) {
+            Block block = ad.getSignBlock();
+            if(block != null) {
+                AdSignManager.remove(ad);
+                block.setType(Material.AIR);
+                block.getWorld().dropItemNaturally(block.getLocation(),
+                        new ItemStack(Material.SIGN, 1));
+            }
+            player.sendMessage(ChatColor.RED + "Ogloszenie nieaktualne");
+            return;
+        }
+
+        if(!Economy.transfer(buyerName, sellerName, price)) return;
+        if(!Region.changeOwner(region, buyerName, manager)) return;
+
+        // Change sign owner
+        AdSignManager.changeOwner(ad, buyerName);
+        // Deactivate ad
+        ad.setActive(false);
+        ad.save();
+
+        // Update sign
+        AdSignManager.updateSign(ad);
+
+        player.sendMessage(ChatColor.BLUE + "Teren nalezy teraz do ciebie");
+    }
+
+    private void rentAction(Player player, AdSign ad) {
+        String locationType = ad.getLocationType();
+        if(!Permissions.can(player, locationType, Permissions.rent)) return;
+
+        String buyerName = player.getName();
+        String sellerName = ad.getOwner();
+        String regionName = ad.getRegion();
+        double price = ad.getPrice().doubleValue();
+
+        if(ad.getActive()) { // Rent region
             // Check region
             RegionManager manager = SellCube.wg.getGlobalRegionManager().get(player.getWorld());
             ProtectedRegion region = manager.getRegion(regionName);
             if(region == null ||
                     !(region.getOwners().getPlayers().contains(sellerName) ||
-                      Permissions.has(sellerName, Permissions.sell_all, locationType, ad.getSignWorld()))) {
+                        Permissions.has(sellerName, Permissions.sell_all, locationType, ad.getSignWorld()))) {
+                Block block = ad.getSignBlock();
                 if(block != null) {
                     AdSignManager.remove(ad);
                     block.setType(Material.AIR);
@@ -125,48 +179,8 @@ public class PlayerInteract implements Listener {
                 return;
             }
 
-            // Check accounts
-            if(!SellCube.economy.hasAccount(buyerName) ||
-                    !SellCube.economy.hasAccount(sellerName)) {
-                player.sendMessage(ChatColor.RED + "Blad konta");
-                return;
-            }
-            //MethodAccount buyerMA = SellCube.economy.getAccount(buyerName);
-            //MethodAccount sellerMA = m.getAccount(sellerName);
-            if(!SellCube.economy.has(buyerName, price)) {
-                player.sendMessage(ChatColor.RED + "Nie masz wystarczajacej liczby coinow");
-                return;
-            }
-
-            // Transfer money
-            SellCube.economy.withdrawPlayer(buyerName, price);
-            SellCube.economy.depositPlayer(sellerName, price);
-            player.sendMessage(ChatColor.GREEN + "Pobrano " +
-                    ChatColor.DARK_AQUA + price +
-                    ChatColor.GREEN + "c z twojego konta (stan " +
-                    ChatColor.DARK_AQUA + SellCube.economy.getBalance(buyerName) +
-                    ChatColor.GREEN + "c)");
-            Player seller = Bukkit.getPlayer(sellerName);
-            if(Bukkit.getOfflinePlayer(sellerName).isOnline()) {
-                seller.sendMessage(ChatColor.GREEN + "Przelano " +
-                        ChatColor.DARK_AQUA + price +
-                        ChatColor.GREEN + "c na twoje konto (stan " +
-                        ChatColor.DARK_AQUA + SellCube.economy.getBalance(sellerName) +
-                        ChatColor.GREEN + "c)");
-            }
-
-            // Change region owner
-            try {
-                //region.getOwners().removePlayer(sellerName);
-                Set<String> owners = region.getOwners().getPlayers();
-                for(String s : owners)
-                    region.getOwners().removePlayer(s);
-                region.getOwners().addPlayer(buyerName);
-                manager.save();
-            } catch (IOException e) {
-                SellCube.log(Level.WARNING, "Region save error: " +  e.getMessage());
-                return;
-            }
+            if(!Economy.transfer(buyerName, sellerName, price)) return;
+            if(!Region.changeOwner(region, buyerName, manager)) return;
 
             // Change sign owner
             AdSignManager.changeOwner(ad, buyerName);
@@ -176,6 +190,20 @@ public class PlayerInteract implements Listener {
 
             // Update sign
             AdSignManager.updateSign(ad);
+
+            player.sendMessage(ChatColor.BLUE + "Teren nalezy do ciebie do " + Utils.dateFormat.format(ad.getRentedTo()));
+        }
+        else { // Extend rental period
+            long rentedTo = ad.getRentedTo().getTime();
+            if((rentedTo - new Date().getTime()) / Utils.DAY > Permissions.maxRentDays - 1) {
+                player.sendMessage(ChatColor.RED + "Nie mozna bardziej przedluzyc wynajmu");
+                return;
+            }
+            if(!Economy.transfer(buyerName, sellerName, price)) return;
+            ad.setRentedTo(new Date(rentedTo + Utils.DAY));
+            ad.save();
+
+            player.sendMessage(ChatColor.BLUE + "Wynajem przedluzono do " + Utils.dateFormat.format(ad.getRentedTo()));
         }
     }
 }

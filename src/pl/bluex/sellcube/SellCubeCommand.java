@@ -1,7 +1,6 @@
 package pl.bluex.sellcube;
 
-import pl.bluex.sellcube.entities.AdSign;
-import pl.bluex.sellcube.entities.AdSignManager;
+import pl.bluex.sellcube.utils.Utils;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -12,46 +11,73 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import pl.bluex.sellcube.entities.AdSign;
+import pl.bluex.sellcube.entities.AdSignManager;
 
 class SellCubeCommand implements CommandExecutor {
 	private SellCube plugin;
+//    private final HashMap<String, Method> commands = new HashMap<String, Method>();
 	
 	public SellCubeCommand(SellCube instance) {
 		this.plugin = instance;
+        instance.getCommand("sellcube").setExecutor(this);
+//        for(Method m: SellCubeCommand.class.getMethods()) {
+//            String[] c = m.getName().split("Command");
+//            if(c.length == 2 && "".equals(c[1])) {
+//                commands.put("sc" + c[0], m);
+//                instance.getCommand(c[0]).setExecutor(this);
+//            }
+//        }
+        instance.getCommand("scadd").setExecutor(this);
+        instance.getCommand("sccancel").setExecutor(this);
+        instance.getCommand("scstatus").setExecutor(this);
+        instance.getCommand("sctp").setExecutor(this);
+        instance.getCommand("scfind").setExecutor(this);
+//        instance.getCommand("sccopy").setExecutor(this);
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-            LinkedList<String> argsl = new LinkedList<String>(Arrays.asList(args));
-            // Console command
-            if(!(sender instanceof Player)) {
-                if("sellcube".equalsIgnoreCase(cmd.getName()) && argsl.size() == 1 && "update".equalsIgnoreCase(argsl.get(0))) {
-                    new SignUpdater(plugin).run();
-                }
-                return true;
+        LinkedList<String> argsl = new LinkedList<String>(Arrays.asList(args));
+        // Console command
+        if(!(sender instanceof Player)) {
+            if("sellcube".equalsIgnoreCase(cmd.getName()) && argsl.size() == 1 && "update".equalsIgnoreCase(argsl.get(0))) {
+                new SignUpdater(plugin).run();
             }
-            // Player command
-            Player player = (Player)sender;
-            String command;
-            if("sellcube".equalsIgnoreCase(cmd.getName())) {
-                if(argsl.size() < 1) return false;
-                command = argsl.get(0);
-                argsl.remove(0);
-            }
-            else {
-                command = cmd.getName().substring(2);
-            }
-            
-            if("cancel".equalsIgnoreCase(command))
-                return cancelCommand(player);
-            else if("status".equalsIgnoreCase(command))
-                return statusCommand(player);
-            else if("tp".equalsIgnoreCase(command))
-                return teleportCommand(player);
-            else if("find".equalsIgnoreCase(command))
-                return findCommand(player);
-            else if("add".equalsIgnoreCase(command))
-                return addCommand(player, argsl);
+            return true;
+        }
+        // Player command
+        Player player = (Player)sender;
+        String command;
+        if("sellcube".equalsIgnoreCase(cmd.getName())) {
+            if(argsl.size() < 1) return false;
+            command = argsl.get(0);
+            argsl.remove(0);
+        }
+        else {
+            command = cmd.getName().substring(2);
+        }
+
+//        Method m = commands.get(command);
+//        if(m != null) {
+//            try {
+//                return m.invoke(this, player).equals(true);
+//            }
+//            catch (IllegalAccessException ex) {}
+//            catch (IllegalArgumentException ex) {}
+//            catch (InvocationTargetException ex) {}
+//        }
+
+        if("cancel".equalsIgnoreCase(command))
+            return cancelCommand(player);
+        else if("status".equalsIgnoreCase(command))
+            return statusCommand(player);
+        else if("tp".equalsIgnoreCase(command))
+            return teleportCommand(player);
+        else if("find".equalsIgnoreCase(command))
+            return findCommand(player);
+        else if("add".equalsIgnoreCase(command))
+            return addCommand(player, argsl);
         return false;
 	}
 
@@ -65,19 +91,18 @@ class SellCubeCommand implements CommandExecutor {
         if(!Permissions.has(player, Permissions.sell)) return true;
         if(argsl.size() < 2) return false;
         boolean lwcPass = false, rental = false;
+        String location = "default";
         for(int i = 0; i < argsl.size() - 2; i++) {
             if("lp".equalsIgnoreCase(argsl.get(i))) {
                 if(!Permissions.has(player, Permissions.lwc_pass)) return true;
                 lwcPass = true;
             }
             if("r".equalsIgnoreCase(argsl.get(i))) {
-                if(!Permissions.has(player, Permissions.rent)) return true;
                 rental = true;
             }
             else
                 return false;
         }
-        if(!lwcPass && !Permissions.has(player, Permissions.lwc_pass)) return true;
         BigDecimal price;
         try {
             price = new BigDecimal(argsl.get(argsl.size() - 2));
@@ -110,6 +135,7 @@ class SellCubeCommand implements CommandExecutor {
         ad.setPrice(price);
         ad.setLwcPass(lwcPass);
         ad.setSeller(player.getName());
+        ad.setLoacationName(location);
         SellCube.newAds.put(player, ad);
         player.sendMessage(ChatColor.BLUE + "Kliknij znak z ogloszeniem" + ((!lwcPass)?" [LWC Pass]":""));
         return true;
@@ -153,7 +179,7 @@ class SellCubeCommand implements CommandExecutor {
         for(AdSign ad : AdSignManager.get(player.getName(), false).where().isNotNull("region").order().desc("id").findList()) {
             Block block = ad.getSignBlock();
             if(block == null) continue;
-            SellCube.teleport(player, block);
+            Utils.teleport(player, block);
             return true;
         }
         player.sendMessage(ChatColor.RED + "Nie kupiles zadnego regionu");
@@ -166,7 +192,7 @@ class SellCubeCommand implements CommandExecutor {
         for(AdSign ad : AdSignManager.get(true).order().asc("id").findList()) {
             Block block = ad.getSignBlock();
             if(block == null) continue;
-            SellCube.teleport(player, block);
+            Utils.teleport(player, block);
             return true;
         }
         player.sendMessage(ChatColor.RED + "Nie znaleziono zadnego ogloszenia");

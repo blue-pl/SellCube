@@ -9,46 +9,47 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import pl.bluex.sellcube.SellCube;
+import pl.bluex.sellcube.utils.Utils;
 
 @Entity
 @Table(name = "sellcube_adsign", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"sign_world", "sign_x", "sign_y", "sign_z"})})
 public class AdSign {
     @Id
-    private Integer id;
+    private Integer id; // Identifier
     @Column(name = "seller", nullable = false, length = 255)
-    private String seller;
+    private String seller; // Player creating ad
     @Column(name = "owner", nullable = false, length = 255)
-    private String owner;
+    private String owner; // Player owning ad
     @Column(name = "region", length = 255)
-    private String region;
-    //@Max(value=9999)  @Min(value=0)//if you know range of your decimal fields consider using these annotations to enforce field validation
+    private String region; // Region name
+    //@Max(value=9999)  @Min(value=0) //if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "price", precision = 6, scale = 2)
-    private BigDecimal price = BigDecimal.ZERO;
+    private BigDecimal price = BigDecimal.ZERO; // Price
     @Column(name = "active")
-    private Boolean active = true;
+    private Boolean active = true; // true - advert, false - owner info
     @Column(name = "lwc_pass")
-    private Boolean lwcPass = false;
+    private Boolean lwcPass = false; // sign lwc owner pass
     @Column(name = "rental")
-    private Boolean rental = false;
+    private Boolean rental = false; // true - rent ad, false - sell ad
     @Column(name = "rented_to", nullable = true)
     @Temporal(TemporalType.DATE)
-    private Date rentedTo;
+    private Date rentedTo; // rented to date
     @Column(name = "sign_world", nullable = false, length = 255)
-    private String signWorld;
+    private String signWorld; // sign world
     @Column(name = "sign_x", nullable = false)
-    private int signX;
+    private int signX; // sign location
     @Column(name = "sign_y", nullable = false)
-    private int signY;
+    private int signY; // sign location
     @Column(name = "sign_z", nullable = false)
-    private int signZ;
+    private int signZ; // sign location
     @Column(name = "invited")
     @OneToMany(cascade=CascadeType.ALL, mappedBy="adSign")
-    private List<InvitedPlayer>invited;
+    private List<InvitedPlayer>invited; // list of invited players
     @Column(name = "location_type")
-    private String locationType;
+    private String locationType; // name of group of locations
     @Column(name = "loacation_name")
-    private String loacationName;
+    private String loacationName; // name of location given by player (used by tp)
 
     public AdSign() {
     }
@@ -188,7 +189,7 @@ public class AdSign {
             return block;
         }
         else if(getId() != null) {
-            SellCube.log(Level.INFO, String.format(
+            Utils.log(Level.INFO, String.format(
                     "Block %s @ (%d,%d,%d,%s) is not sign (%s). Ad removed",
                     block.getState().getType(), getSignX(), getSignY(), getSignZ(), getSignWorld()));
             AdSignManager.remove(this);

@@ -1,33 +1,25 @@
 package pl.bluex.sellcube;
 
+import pl.bluex.sellcube.utils.Utils;
 import com.avaje.ebean.EbeanServer;
 import com.earth2me.essentials.Essentials;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.PersistenceException;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.material.Directional;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 import pl.bluex.sellcube.entities.AdSign;
 import pl.bluex.sellcube.entities.AdSignManager;
 import pl.bluex.sellcube.entities.InvitedPlayer;
@@ -35,11 +27,7 @@ import pl.bluex.sellcube.entities.InvitedPlayer;
 
 public class SellCube extends JavaPlugin {
     protected static final HashMap<Player, AdSign> newAds = new HashMap<Player, AdSign>();
-    protected static final HashMap<String, String> groupsColors = new HashMap<String, String>();
-
-    public static String pluginName = "SellCube";
-	public static final Logger logger = Logger.getLogger("Minecraft");
-    public static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy");
+    
     public static EbeanServer database;
     public static PluginManager pm;
     public static WorldGuardPlugin wg;
@@ -57,7 +45,6 @@ public class SellCube extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		pm = getServer().getPluginManager();
-        pluginName = getDescription().getName();
 		FileConfiguration config = getConfig();
         getConfig().options().copyDefaults(true);
         saveConfig();
@@ -65,45 +52,26 @@ public class SellCube extends JavaPlugin {
         boolean updater = config.getBoolean("sign_updater");
         setupDatabase();
         setupEssentials();
-		if (setupWorldGuard() && setupPermissions() && setupLWC()) {
+		if(setupWorldGuard() && setupPermissions() && setupEconomy() && setupChat() && setupLWC()) {
 			playerInteract = new PlayerInteract(this);
             playerLogin = new PlayerLogin(this);
             signInteract = new SignInteract(this);
             sellCubeCommand = new SellCubeCommand(this);
-			getCommand("sellcube").setExecutor(sellCubeCommand);
-            getCommand("scadd").setExecutor(sellCubeCommand);
-            getCommand("sccancel").setExecutor(sellCubeCommand);
-            getCommand("scstatus").setExecutor(sellCubeCommand);
-            getCommand("sctp").setExecutor(sellCubeCommand);
-            getCommand("scfind").setExecutor(sellCubeCommand);
-            getCommand("sccopy").setExecutor(sellCubeCommand);
+			
             if(updater) {
                 getServer().getScheduler().scheduleAsyncRepeatingTask(this,
                         new SignUpdater(this), 100L, 864000L);
             }
+            Permissions.init(config);
+            Utils.log(Level.INFO, String.format("%s is enabled.", getDescription().getFullName()));
 		}
-        ConfigurationSection gc = config.getConfigurationSection("colors");
-        if(gc != null) {
-            String s;
-            for (String key : gc.getKeys(true)) {
-                s = gc.get(key).toString();
-                if(s.matches("[0-9A-Fa-f]")) {
-                    groupsColors.put(key, "§" + s.charAt(0));
-                }
-            }
-        }
-		log(Level.INFO, String.format("%s is enabled.", getDescription().getFullName()));
 	}
 
 	@Override
 	public void onDisable() {
         getServer().getScheduler().cancelTasks(this);
-		log(Level.INFO, String.format("%s is disabled.", getDescription().getFullName()));
+		Utils.log(Level.INFO, String.format("%s is disabled.", getDescription().getFullName()));
 	}
-
-    public static void log(Level level, String msg) {
-        logger.log(level, String.format("[%s] %s", pluginName, msg));
-    }
 
     private Boolean setupPermissions() {
         RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(Permission.class);
@@ -136,7 +104,7 @@ public class SellCube extends JavaPlugin {
 			Plugin worldGuard = pm.getPlugin("WorldGuard");
 
 			if (worldGuard == null || !(worldGuard instanceof WorldGuardPlugin)) {
-				log(Level.SEVERE, "WorldGuard detection failed.");
+				Utils.log(Level.SEVERE, "WorldGuard detection failed.");
 				wg = null;
 				return false;
 			} else {
@@ -151,7 +119,7 @@ public class SellCube extends JavaPlugin {
 			Plugin essentials = pm.getPlugin("Essentials");
 
 			if (essentials == null || !(essentials instanceof Essentials)) {
-				log(Level.WARNING, "Essentials detection failed.");
+				Utils.log(Level.WARNING, "Essentials detection failed.");
 				es = null;
 				return false;
 			} else {
@@ -166,7 +134,7 @@ public class SellCube extends JavaPlugin {
 			Plugin lwc_plug = pm.getPlugin("LWC");
 
 			if (lwc_plug == null || !(lwc_plug instanceof LWCPlugin)) {
-				log(Level.SEVERE, "LWC detection failed.");
+				Utils.log(Level.SEVERE, "LWC detection failed.");
 				lwc = null;
 				return false;
 			} else {
@@ -181,7 +149,7 @@ public class SellCube extends JavaPlugin {
             getDatabase().find(AdSign.class).findRowCount();
             getDatabase().find(InvitedPlayer.class).findRowCount();
         } catch (PersistenceException ex) {
-            log(Level.INFO, "Setting up database");
+            Utils.log(Level.INFO, "Setting up database");
             installDDL();
         }
         database = getDatabase();
@@ -193,27 +161,5 @@ public class SellCube extends JavaPlugin {
         list.add(AdSign.class);
         list.add(InvitedPlayer.class);
         return list;
-    }
-
-    public static String getPlayerGroupColor(String player, String world) {
-        if(permission == null) return "§f";
-        for (String g : permission.getPlayerGroups(world, player)) {
-            if(groupsColors.containsKey(g)) {
-                return groupsColors.get(g);
-            }
-        }
-        return "§f";
-    }
-
-    public static boolean teleport(Player player, Block block) {
-        BlockFace dir = ((Directional) block.getType().getNewData(block.getData())).getFacing();
-        Vector v = new Vector(dir.getModX(), dir.getModY(), dir.getModZ());
-        Location l = block.getLocation().clone();
-        l.setPitch(0);
-        l.setYaw((float)(Math.atan2(dir.getModX(), -dir.getModZ()) * 180f / (float) Math.PI));
-        l.add(v.multiply(2));
-        l.add(0.5, 0, 0.5);
-        l.getChunk(); // force load chunk
-        return es.getUser(player).teleport(l, PlayerTeleportEvent.TeleportCause.COMMAND);
     }
 }

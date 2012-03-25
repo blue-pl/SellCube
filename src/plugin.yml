@@ -1,9 +1,9 @@
 name: SellCube
 main: pl.bluex.sellcube.SellCube
-version: '1.0'
+version: '2.0'
 description: Plugin pozwalajacy sprzedawać regiony za pomoca znakow
 author: BlueX
-depend: [WorldGuard, Vault, PermissionsEx, FirstLastSeenDB]
+depend: [WorldGuard, Vault, FirstLastSeenDB]
 softdepend : [Essentials]
 database: true
 permissions:
@@ -62,11 +62,11 @@ commands:
   scadd:
     description: tworzy ogloszenie
     permission: sellcube.sell
-    usage: /<command> add [lp] [r] cena nazwa_regionu
+    usage: /<command> [lp] [r] cena nazwa_regionu
   sccopy:
     description: kopiuje ogloszenie na podstawie id w bazie
     permission: sellcube.sell
-    usage: /<command> copy id
+    usage: /<command> id
   sccancel:
     description: anuluje tworzenie ogloszenia
     permission: sellcube.sell
