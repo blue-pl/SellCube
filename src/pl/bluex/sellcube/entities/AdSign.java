@@ -9,7 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import pl.bluex.sellcube.SellCube;
-import pl.bluex.sellcube.utils.Utils;
+import pl.bluex.sellcube.Utils;
 
 @Entity
 @Table(name = "sellcube_adsign", uniqueConstraints = {

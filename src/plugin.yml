@@ -50,11 +50,11 @@ permissions:
       sellcube.*.find: true
 commands:
   sellcube:
-    description: Zarządza ogłoszeniami
+    description: zarządza ogłoszeniami
     aliases: sc
     usage: |
-      /<command> add [lp] [r] cena nazwa_regionu - tworzy ogloszenie
-      /<command> copy id - kopiuje ogloszenie na podstawie id w bazie
+      /<command> add [lp] [r] <cena> <region> <lokalizacja> - tworzy ogloszenie
+      /<command> copy <id> - kopiuje ogloszenie na podstawie id w bazie
       /<command> cancel - anuluje tworzenie ogloszenia
       /<command> find - teleportuje do pierwszego dostepnego ogloszenia
       /<command> status - tworzy tabliczke z informacjami o graczu
@@ -62,11 +62,11 @@ commands:
   scadd:
     description: tworzy ogloszenie
     permission: sellcube.sell
-    usage: /<command> [lp] [r] cena nazwa_regionu
+    usage: /<command> add [lp] [r] <cena> <region> <lokalizacja>
   sccopy:
     description: kopiuje ogloszenie na podstawie id w bazie
     permission: sellcube.sell
-    usage: /<command> id
+    usage: /<command> <id>
   sccancel:
     description: anuluje tworzenie ogloszenia
     permission: sellcube.sell

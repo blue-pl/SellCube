@@ -12,10 +12,9 @@ import pl.bluex.firstlastseendb.PlayerTimeStamp;
 import pl.bluex.firstlastseendb.PlayerTimeStampManager;
 import pl.bluex.sellcube.Permissions;
 import pl.bluex.sellcube.SellCube;
-import pl.bluex.sellcube.utils.Utils;
+import pl.bluex.sellcube.Utils;
 
 public class AdSignManager {
-    protected static final long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
     public static int offlineDays = 21;
 
     public static void changeOwner(AdSign ad, String owner) {
@@ -146,7 +145,7 @@ public class AdSignManager {
                 if(pts.getHoliday() != null && pts.getHoliday().getTime() >= now) {
                     color = "§5"; // putple
                 }
-                else if((now - pts.getLastSeen().getTime()) / MILLSECS_PER_DAY > offlineDays) {
+                else if((now - pts.getLastSeen().getTime()) / Utils.DAY > offlineDays) {
                     color = "§4"; // red
                 }
             }

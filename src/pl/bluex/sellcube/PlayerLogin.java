@@ -1,6 +1,5 @@
 package pl.bluex.sellcube;
 
-import pl.bluex.sellcube.utils.Utils;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;

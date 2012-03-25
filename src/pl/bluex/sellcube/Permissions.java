@@ -7,7 +7,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import pl.bluex.sellcube.entities.AdSignManager;
-import pl.bluex.sellcube.utils.Utils;
 
 public enum Permissions {
     sell,
@@ -100,19 +99,28 @@ public enum Permissions {
                 break;
             default: return has(player, node, location);
         }
+        if(!has(player, node, location)) return false;
         int limit = getLimit(player.getName(), player.getWorld().getName(), location, node);
-        if(val > limit) {
-            player.sendMessage(ChatColor.RED + "Limit wykorzystany.");
+        if(limit == Integer.MIN_VALUE) {
+            if(msg) player.sendMessage(ChatColor.RED + "Nie mozesz "+(node.equals(Permissions.rent)?"wynajac":"kupic")+" tego terenu");
+            return false;
+        }
+        if(val >= limit) {
+            if(msg) player.sendMessage(ChatColor.RED + "Limit wykorzystany.");
             return false;
         }
         return true;
     }
 
     private static Integer getLimit(String player, String world, String location, Permissions node) {
-        int limit = 0;
+        int limit = Integer.MIN_VALUE;
         for(String locGroup : locGroups.getKeys(false)) {
             if(has(player, node, locGroup, world)) {
-                limit = Math.max(limit, locGroups.getInt(String.format("%s.%s.%s", locGroup, location, node.name()), -1));
+                int x = locGroups.getInt(String.format("%s.%s.%s", locGroup, location, node.name()), Integer.MIN_VALUE);
+                if(x != -1)
+                    limit = Math.max(limit, x);
+                else
+                    return Integer.MAX_VALUE;
             }
         }
         return limit;

@@ -1,6 +1,5 @@
 package pl.bluex.sellcube;
 
-import pl.bluex.sellcube.utils.Utils;
 import com.avaje.ebean.EbeanServer;
 import com.earth2me.essentials.Essentials;
 import com.griefcraft.lwc.LWC;

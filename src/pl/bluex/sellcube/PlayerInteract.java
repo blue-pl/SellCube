@@ -17,9 +17,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import pl.bluex.sellcube.entities.AdSign;
 import pl.bluex.sellcube.entities.AdSignManager;
-import pl.bluex.sellcube.utils.Economy;
-import pl.bluex.sellcube.utils.Region;
-import pl.bluex.sellcube.utils.Utils;
 
 public class PlayerInteract implements Listener {
 
@@ -137,8 +134,8 @@ public class PlayerInteract implements Listener {
             return;
         }
 
-        if(!Economy.transfer(buyerName, sellerName, price)) return;
-        if(!Region.changeOwner(region, buyerName, manager)) return;
+        if(!Utils.transferMoney(buyerName, sellerName, price)) return;
+        if(!Utils.setRegionOwner(region, buyerName, manager)) return;
 
         // Change sign owner
         AdSignManager.changeOwner(ad, buyerName);
@@ -179,8 +176,8 @@ public class PlayerInteract implements Listener {
                 return;
             }
 
-            if(!Economy.transfer(buyerName, sellerName, price)) return;
-            if(!Region.changeOwner(region, buyerName, manager)) return;
+            if(!Utils.transferMoney(buyerName, sellerName, price)) return;
+            if(!Utils.setRegionOwner(region, buyerName, manager)) return;
 
             // Change sign owner
             AdSignManager.changeOwner(ad, buyerName);
@@ -199,7 +196,7 @@ public class PlayerInteract implements Listener {
                 player.sendMessage(ChatColor.RED + "Nie mozna bardziej przedluzyc wynajmu");
                 return;
             }
-            if(!Economy.transfer(buyerName, sellerName, price)) return;
+            if(!Utils.transferMoney(buyerName, sellerName, price)) return;
             ad.setRentedTo(new Date(rentedTo + Utils.DAY));
             ad.save();
 

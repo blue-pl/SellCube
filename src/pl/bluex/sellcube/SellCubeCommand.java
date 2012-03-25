@@ -1,6 +1,5 @@
 package pl.bluex.sellcube;
 
-import pl.bluex.sellcube.utils.Utils;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -89,10 +88,9 @@ class SellCubeCommand implements CommandExecutor {
 
     protected boolean addCommand(Player player, LinkedList<String> argsl) {
         if(!Permissions.has(player, Permissions.sell)) return true;
-        if(argsl.size() < 2) return false;
+        if(argsl.size() < 3) return false;
         boolean lwcPass = false, rental = false;
-        String location = "default";
-        for(int i = 0; i < argsl.size() - 2; i++) {
+        for(int i = 0; i < argsl.size() - 3; i++) {
             if("lp".equalsIgnoreCase(argsl.get(i))) {
                 if(!Permissions.has(player, Permissions.lwc_pass)) return true;
                 lwcPass = true;
@@ -105,7 +103,7 @@ class SellCubeCommand implements CommandExecutor {
         }
         BigDecimal price;
         try {
-            price = new BigDecimal(argsl.get(argsl.size() - 2));
+            price = new BigDecimal(argsl.get(argsl.size() - 3));
             if(price.intValue() > 9999) {
                 player.sendMessage(ChatColor.RED + "Zbyt wysoka cena");
                 return true;
@@ -115,7 +113,7 @@ class SellCubeCommand implements CommandExecutor {
             player.sendMessage(ChatColor.RED + "Nieprawidlowa cena");
                 return true;
         }
-        String regName = argsl.get(argsl.size() - 1);
+        String regName = argsl.get(argsl.size() - 2);
         if(regName.equalsIgnoreCase("__global__")) {
             player.sendMessage(ChatColor.RED + "Niedostepna nazwa regionu");
             return true;
@@ -130,12 +128,17 @@ class SellCubeCommand implements CommandExecutor {
             player.sendMessage(ChatColor.RED + "Nie jestes wlascicielem regionu");
             return true;
         }
+        String location = argsl.get(argsl.size() - 2);
+        if("-".equals(location))
+            location = "default";
+        
         AdSign ad = new AdSign();
         ad.setRegion(regName);
         ad.setPrice(price);
         ad.setLwcPass(lwcPass);
         ad.setSeller(player.getName());
         ad.setLoacationName(location);
+        ad.setRental(rental);
         SellCube.newAds.put(player, ad);
         player.sendMessage(ChatColor.BLUE + "Kliknij znak z ogloszeniem" + ((!lwcPass)?" [LWC Pass]":""));
         return true;

@@ -1,7 +1,6 @@
 
 package pl.bluex.sellcube;
 
-import pl.bluex.sellcube.utils.Utils;
 import java.util.logging.Level;
 import pl.bluex.sellcube.entities.AdSignManager;
 
