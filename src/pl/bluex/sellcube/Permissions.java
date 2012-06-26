@@ -20,7 +20,7 @@ public enum Permissions {
     private static final String prefix = "sellcube";
     private static String defaultColor;
     private static ConfigurationSection locGroups;
-    private static HashMap<String, String> groupsColors;
+    private static HashMap<String, String> groupsColors = new HashMap<String, String>();
     protected static int maxRentDays;
 
     public static void init(FileConfiguration config) {

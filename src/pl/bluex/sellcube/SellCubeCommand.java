@@ -137,7 +137,7 @@ class SellCubeCommand implements CommandExecutor {
         ad.setPrice(price);
         ad.setLwcPass(lwcPass);
         ad.setSeller(player.getName());
-        ad.setLoacationName(location);
+        ad.setName(location);
         ad.setRental(rental);
         SellCube.newAds.put(player, ad);
         player.sendMessage(ChatColor.BLUE + "Kliknij znak z ogloszeniem" + ((!lwcPass)?" [LWC Pass]":""));

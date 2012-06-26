@@ -19,6 +19,9 @@ To czy użytkownik jest na wakacjach plugin określa na podstawie informacji z w
 
 Tabliczki chronione są za pomocą LWC w trybie publicznym dla użytkownika, który stworzył tabliczkę (aktywna i nieaktywna utworzona z parametrem 'lp') lub nowego właściciela regionu (nieaktywna utworzona bez parametru 'lp')
 
+Usunięcie aktywnej tabliczki równoważne jest z usunięciem ogłoszenia  
+Usunięcie nieaktywnej tabliczki usuwa lokalizację, do której gracz teleportuje się komendą `/sctp`
+
 Wymagania
 ---------
 * WorldGuard
@@ -84,3 +87,30 @@ Przykładowa konfiguracja sekcji database:
       driver: com.mysql.jdbc.Driver
       password: pass
       url: jdbc:mysql://localhost:3306/database_name
+
+Tabele w bazie danych
+---------------------
+__AdSign__
+
+    id        - identyfikator
+    seller    - gracz któy utworzył ogłoszenie
+    owner     - gracz któy aktualnie posiada region
+    region    - nazwa regionu
+    price     - cena
+    active    - true - znak z ogłoszeniem, false - znak z informacją o graczu
+    lwcPass   - true - kupujący staje się nowym właścicilem LWC tabliczki
+    rental    - true - ogłoszenie wynajmu, false - ogłoszenie sprzedaży
+    rentedTo  - data do której wynajęty jest region
+    signWorld - lokalizacja znaku
+    sign_x
+    sign_y
+    sign_z
+    location  - nazwa grupy lokalizacji
+    name      - nazwa używana podczas teleportowania do tej lokalizacji
+
+__InvitedPlayer__
+
+    id        - identyfikator
+    adsign_id - identyfikator regionu do kórego gracz został zaproszony
+    player    - nazwa gracza
+    name      - nazwa używana podczas teleportowania do tej lokalizacji

@@ -46,10 +46,10 @@ public class AdSign {
     @Column(name = "invited")
     @OneToMany(cascade=CascadeType.ALL, mappedBy="adSign")
     private List<InvitedPlayer>invited; // list of invited players
-    @Column(name = "location_type")
-    private String locationType; // name of group of locations
-    @Column(name = "loacation_name")
-    private String loacationName; // name of location given by player (used by tp)
+    @Column(name = "location")
+    private String location; // name of group of locations
+    @Column(name = "name")
+    private String name; // name of location given by player (used by tp)
 
     public AdSign() {
     }
@@ -167,20 +167,20 @@ public class AdSign {
         this.invited = invited;
     }
 
-    public String getLocationType() {
-        return locationType;
+    public String getLocation() {
+        return location;
     }
 
-    public void setLocationType(String locationType) {
-        this.locationType = locationType;
+    public void setLocation(String location) {
+        this.location = location;
     }
     
-    public String getLoacationName() {
-        return loacationName;
+    public String getName() {
+        return name;
     }
 
-    public void setLoacationName(String loacationName) {
-        this.loacationName = loacationName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Block getSignBlock() {

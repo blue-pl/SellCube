@@ -110,7 +110,7 @@ public class PlayerInteract implements Listener {
 
     protected void buyAction(Player player, AdSign ad) {
         if(!ad.getActive()) return;
-        String locationType = ad.getLocationType();
+        String locationType = ad.getLocation();
         if(!Permissions.can(player, locationType, Permissions.buy)) return;
         String buyerName = player.getName();
         String sellerName = ad.getOwner();
@@ -150,7 +150,7 @@ public class PlayerInteract implements Listener {
     }
 
     private void rentAction(Player player, AdSign ad) {
-        String locationType = ad.getLocationType();
+        String locationType = ad.getLocation();
         if(!Permissions.can(player, locationType, Permissions.rent)) return;
 
         String buyerName = player.getName();

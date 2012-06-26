@@ -13,8 +13,8 @@ public class InvitedPlayer {
     AdSign adSign;
     @Column(name = "player", nullable = false, length = 255)
     private String player;
-    @Column(name = "location_name", length = 255)
-    private String locationName;
+    @Column(name = "name", length = 255)
+    private String name;
 
     public InvitedPlayer() {
     }
@@ -44,12 +44,12 @@ public class InvitedPlayer {
         this.player = player;
     }
 
-    public String getLocationName() {
-        return locationName;
+    public String getName() {
+        return name;
     }
 
-    public void setLocationName(String locationName) {
-        this.locationName = locationName;
+    public void setName(String name) {
+        this.name = name;
     }
     // </editor-fold>
 

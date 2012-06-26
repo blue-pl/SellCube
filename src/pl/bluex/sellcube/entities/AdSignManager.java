@@ -160,7 +160,7 @@ public class AdSignManager {
     }
 
     public static void updateSigns() {
-        SqlQuery query = SellCube.database.createSqlQuery("select owner from sellcube group by owner");
+        SqlQuery query = SellCube.database.createSqlQuery("select owner from sellcube_adsign group by owner");
         String owner;
         for(SqlRow row : query.findList()) {
             owner = row.getString("owner");
